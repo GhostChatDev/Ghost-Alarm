@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#06080A"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>Ready by Eight</title>
+<style>
+:root{
+  --mint-bright:#D9FAB8; --mint:#C2E89E; --teal:#59B8AD;
+  --ink-deep:#06080A; --ink:#0E1113; --ink-raised:#1A1D21;
+  --text-primary:rgba(255,255,255,.92); --text-secondary:rgba(255,255,255,.58);
+  --hairline:rgba(255,255,255,.10); --glass:rgba(255,255,255,.06); --glass-strong:rgba(255,255,255,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  background:var(--ink-deep); color:var(--text-primary);
+  overflow-x:hidden; -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+}
+/* ---------- Aurora background ---------- */
+#aurora{position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,var(--ink-deep),var(--ink));overflow:hidden}
+.orb{position:absolute;width:64vmax;height:64vmax;border-radius:50%;filter:blur(90px);will-change:transform}
+.orb-a{background:radial-gradient(circle at 35% 35%,var(--teal),transparent 65%);opacity:.17;top:-18vmax;left:-14vmax}
+.orb-b{background:radial-gradient(circle at 60% 60%,var(--mint),transparent 65%);opacity:.10;bottom:-22vmax;right:-16vmax}
+.vignette{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 8%,transparent 55%,rgba(0,0,0,.55))}
+/* ---------- Glass + press feedback ---------- */
+.glass{
+  background:linear-gradient(160deg,rgba(255,255,255,.075),rgba(255,255,255,.03));
+  border:1px solid var(--hairline); border-radius:24px;
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  box-shadow:0 18px 50px rgba(0,0,0,.35);
+}
+button{font-family:inherit;cursor:pointer}
+button,.tab,.seg-btn{transition:transform .28s cubic-bezier(.34,1.56,.64,1),opacity .28s,background .2s}
+button:active{transform:scale(.97);opacity:.88}
+/* ---------- Top bar ---------- */
+.topbar{max-width:560px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:18px 16px 4px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;letter-spacing:.01em}
+.ghost{font-size:22px;filter:drop-shadow(0 0 8px rgba(194,232,158,.45))}
+.chip-btn{padding:8px 12px;border-radius:14px;background:var(--glass);border:1px solid var(--hairline);color:var(--text-primary);font-size:13px}
+.chip-btn.accent{background:linear-gradient(90deg,var(--teal),var(--mint));color:#08251f;font-weight:600;border:none}
+/* ---------- Layout ---------- */
+main{max-width:560px;margin:0 auto;padding:16px 16px 104px}
+.view{display:none;flex-direction:column;gap:16px}
+.view.active{display:flex}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:8px 2px 0}
+h2{font-size:13px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em}
+/* ---------- Clock dashboard ---------- */
+.clock-card{padding:30px 24px 24px;text-align:center}
+.clock-time{font-size:clamp(56px,17vw,84px);font-weight:200;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+.clock-time .sec{font-size:.30em;color:var(--text-secondary);font-weight:400;margin-left:4px}
+.clock-date{color:var(--text-secondary);margin-top:8px;font-size:15px}
+.next-summary{margin-top:16px;padding:11px 14px;border-radius:14px;background:var(--glass);border:1px solid var(--hairline);color:var(--mint);font-size:14px}
+.next-summary b{color:var(--mint-bright)}
+/* ---------- Reminders ---------- */
+.rem-list{display:flex;flex-direction:column;gap:10px}
+.rem{display:flex;align-items:center;gap:14px;padding:14px 16px}
+.rem .time{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;min-width:78px}
+.rem .meta{flex:1;min-width:0}
+.rem .rep{font-size:12px;color:var(--text-secondary);margin-top:2px}
+.rem.off{opacity:.45}
+.rem .chev{color:var(--text-secondary);font-size:18px}
+.switch{position:relative;width:46px;height:28px;flex:none}
+.switch input{opacity:0;width:100%;height:100%;position:absolute;margin:0;cursor:pointer;z-index:2}
+.knob{position:absolute;inset:0;border-radius:999px;background:var(--ink-raised);border:1px solid var(--hairline);transition:background .2s;pointer-events:none}
+.knob::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s}
+.switch input:checked+.knob{background:linear-gradient(90deg,var(--teal),var(--mint))}
+.switch input:checked+.knob::after{transform:translateX(18px)}
+.empty{padding:26px 18px;text-align:center;color:var(--text-secondary);font-size:14px;border-radius:24px;border:1px dashed var(--hairline)}
+/* Reminder rows (built by JS) */
+.rem-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:20px;background:linear-gradient(160deg,rgba(255,255,255,.075),rgba(255,255,255,.03));border:1px solid var(--hairline);cursor:pointer}
+.rem-time{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;min-width:78px}
+.rem-sub{font-size:12px;color:var(--text-secondary);margin-top:2px}
+.rem-item.off{opacity:.45}
+/* JS-drawn enable toggle */
+.tgl{position:relative;width:46px;height:28px;border-radius:999px;background:var(--ink-raised);border:1px solid var(--hairline);flex:none;cursor:pointer;transition:background .2s}
+.tgl::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s}
+.tgl.on{background:linear-gradient(90deg,var(--teal),var(--mint));border-color:transparent}
+.tgl.on::after{transform:translateX(18px)}
+.chip-btn.danger{color:#ff9c9c;border-color:rgba(255,120,120,.35)}
+/* Chat bubbles inner layout */
+.msg{display:flex;gap:8px;align-items:flex-start}
+.avatar{flex:none;font-size:16px;line-height:1.5}
+.bubble{min-width:0}
+/* Drifting aurora orbs */
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(4vmax,3vmax) scale(1.08)}}
+.orb-a{animation:drift 26s ease-in-out infinite}
+.orb-b{animation:drift 34s ease-in-out infinite reverse}
+/* ---------- Challenge ---------- */
+.challenge-card{padding:18px;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.challenge-card p{font-size:16px;line-height:1.5}
+.done-chip{padding:6px 10px;border-radius:999px;background:rgba(194,232,158,.14);border:1px solid rgba(194,232,158,.35);color:var(--mint-bright);font-size:12px}
+/* ---------- Chat ---------- */
+.chat-head{display:flex;align-items:center;gap:12px;padding:14px 16px}
+.ghost.big{font-size:30px}
+.coach-name{font-weight:700}
+.coach-sub{font-size:12px;color:var(--text-secondary);max-width:220px}
+.chat-head>div{flex:1}
+.chat-log{display:flex;flex-direction:column;gap:10px;padding:6px 2px;min-height:200px}
+.msg{max-width:84%;padding:10px 14px;border-radius:16px;font-size:15px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+.msg.coach{align-self:flex-start;background:var(--ink-raised);border:1px solid var(--hairline);border-bottom-left-radius:6px}
+.msg.user{align-self:flex-end;background:linear-gradient(120deg,rgba(89,184,173,.35),rgba(194,232,158,.22));border:1px solid rgba(194,232,158,.25);border-bottom-right-radius:6px}
+.msg.typing{color:var(--text-secondary)}
+.quick{display:flex;gap:8px;overflow-x:auto;padding:4px 0;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.quick::-webkit-scrollbar{display:none}
+.quick button{flex:none;padding:8px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--hairline);color:var(--mint);font-size:13px}
+.chat-input{display:flex;gap:10px}
+.chat-input input{flex:1;min-width:0;padding:14px 16px;border-radius:14px;background:var(--ink-raised);border:1px solid var(--hairline);color:var(--text-primary);font-size:16px;outline:none}
+.chat-input input:focus{border-color:rgba(194,232,158,.5)}
+.btn{padding:12px 18px;border-radius:14px;font-size:15px;border:1px solid var(--hairline);background:var(--glass-strong);color:var(--text-primary)}
+.btn.accent{background:linear-gradient(90deg,var(--teal),var(--mint));color:#08251f;font-weight:700;border:none}
+.btn.danger{color:#ff9c9c;border-color:rgba(255,120,120,.35)}
+/* ---------- Tab bar ---------- */
+.tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;display:flex;gap:6px;padding:7px;border-radius:999px;background:rgba(14,17,19,.82);border:1px solid var(--hairline);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);z-index:20}
+.tab{padding:10px 18px;border-radius:999px;background:transparent;border:none;color:var(--text-secondary);font-size:14px;font-weight:600}
+.tab.active{background:linear-gradient(90deg,var(--teal),var(--mint));color:#08251f}
+/* ---------- Sheets ---------- */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;z-index:30}
+.backdrop.hidden,.hidden{display:none!important}
+.sheet{width:100%;max-width:560px;padding:26px 22px calc(26px + env(safe-area-inset-bottom));border-radius:32px 32px 0 0;display:flex;flex-direction:column;gap:18px}
+.sheet h3{font-size:18px}
+.sheet label{display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text-secondary)}
+.sheet input{padding:12px 14px;border-radius:14px;background:var(--ink-raised);border:1px solid var(--hairline);color:var(--text-primary);font-size:16px;outline:none;width:100%}
+.sheet input:focus{border-color:rgba(194,232,158,.5)}
+.sheet .hint{font-size:12px;color:var(--text-secondary);line-height:1.5}
+.seg{display:flex;gap:6px}
+.seg-btn{flex:1;padding:10px 2px;border-radius:14px;background:var(--glass);border:1px solid var(--hairline);color:var(--text-secondary);font-size:13px}
+.seg-btn.active{background:linear-gradient(90deg,var(--teal),var(--mint));color:#08251f;font-weight:600;border:none}
+.switch-row{flex-direction:row!important;align-items:center;justify-content:space-between;font-size:15px!important;color:var(--text-primary)!important}
+.sheet-actions{display:flex;gap:10px;justify-content:space-between}
+.sheet-actions .btn{flex:1}
+@media(min-width:560px){.backdrop{align-items:center}.sheet{border-radius:32px}}
+/* ---------- Toast ---------- */
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);padding:12px 18px;border-radius:14px;background:rgba(26,29,33,.96);border:1px solid rgba(194,232,158,.4);color:var(--mint);font-size:14px;z-index:40;max-width:88vw;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="aurora" aria-hidden="true">
+  <div class="orb orb-a" id="orbA"></div>
+  <div class="orb orb-b" id="orbB"></div>
+  <div class="vignette"></div>
+</div>
+
+<header class="topbar">
+  <div class="brand"><span class="ghost">👻</span> Ready by Eight</div>
+  <button class="chip-btn" id="settingsBtn" title="Settings">⚙︎ Settings</button>
+</header>
+
+<main>
+  <!-- ============ CLOCK VIEW ============ -->
+  <section class="view active" id="view-clock">
+    <div class="glass clock-card">
+      <div class="clock-time" id="clockTime">--:--<span class="sec">--</span></div>
+      <div class="clock-date" id="clockDate">—</div>
+      <div class="next-summary" id="nextSummary">No reminders yet — tap “New reminder”.</div>
+    </div>
+
+    <div class="section-head">
+      <h2>Reminders · <span id="remCount">0</span>/8</h2>
+      <button class="chip-btn accent" id="newRemBtn">＋ New reminder</button>
+    </div>
+    <div class="rem-list" id="remList"></div>
+
+    <div class="section-head"><h2>Today’s challenge</h2></div>
+    <div class="glass challenge-card">
+      <p id="challengeText">—</p>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn accent" id="challengeBtn">Mark done</button>
+        <span class="done-chip hidden" id="challengeDone">✓ Done — see you tomorrow</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GHOST COACH VIEW ============ -->
+  <section class="view" id="view-chat">
+    <div class="glass chat-head">
+      <span class="ghost big">👻</span>
+      <div>
+        <div class="coach-name">Ghost Coach</div>
+        <div class="coach-sub">Pushy. Motivating. Private. Kicks you into gear at every alarm.</div>
+      </div>
+      <button class="chip-btn danger" id="clearChatBtn" style="color:#ff9c9c">Clear</button>
+    </div>
+    <div class="chat-log" id="chatLog"></div>
+    <div class="quick" id="quickRow">
+      <button data-q="I don't feel like it today">I don't feel like it</button>
+      <button data-q="Give me a push">Give me a push</button>
+      <button data-q="What's my challenge?">What's my challenge?</button>
+      <button data-q="I finished my challenge">I finished it 🎉</button>
+      <button data-q="I overslept">I overslept</button>
+    </div>
+    <form class="chat-input" id="chatForm">
+      <input id="chatText" type="text" placeholder="Talk to Ghost Coach…" autocomplete="off" maxlength="500"/>
+      <button class="btn accent" type="submit">Send</button>
+    </form>
+    <p class="hint" style="color:var(--text-secondary);font-size:12px;padding:0 4px">
+      Encouragement, not medical advice. Chat can’t change reminders — use the Clock tab.
+      <span id="aiModeNote">Offline coach mode.</span>
+    </p>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <button class="tab active" data-tab="clock">⏰ Clock</button>
+  <button class="tab" data-tab="chat">👻 Ghost Coach</button>
+</nav>
+
+<!-- ============ REMINDER SHEET ============ -->
+<div class="backdrop hidden" id="remBackdrop">
+  <div class="glass sheet" role="dialog" aria-modal="true">
+    <h3 id="remSheetTitle">New reminder</h3>
+    <label>Time
+      <input type="time" id="remTime" value="07:00" required/>
+    </label>
+    <label>Repeat
+      <div class="seg" id="remRepeat">
+        <button class="seg-btn" data-v="once">Once</button>
+        <button class="seg-btn active" data-v="daily">Daily</button>
+        <button class="seg-btn" data-v="weekdays">Mon–Fri</button>
+        <button class="seg-btn" data-v="weekends">Weekends</button>
+      </div>
+    </label>
+    <label class="switch-row">Enabled
+      <span class="switch"><input type="checkbox" id="remEnabled" checked/><span class="knob"></span></span>
+    </label>
+    <div class="sheet-actions">
+      <button class="btn danger hidden" id="remDelete">Delete</button>
+      <button class="btn" id="remCancel">Cancel</button>
+      <button class="btn accent" id="remSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SETTINGS SHEET ============ -->
+<div class="backdrop hidden" id="setBackdrop">
+  <div class="glass sheet" role="dialog" aria-modal="true">
+    <h3>Settings</h3>
+    <label>Notifications
+      <button class="btn" id="notifBtn" style="width:100%">Enable notifications</button>
+      <span class="hint">Reminders ring while this tab is open. A web page can’t ring with the browser closed — keep your phone’s Clock app as backup.</span>
+    </label>
+    <label>Test alarm
+      <button class="btn" id="testAlarmBtn" style="width:100%">Ring a test alarm now</button>
+    </label>
+    <label>Optional AI replies (never required)
+      <input type="text" id="setBase" placeholder="Base URL, e.g. https://api.openai.com/v1"/>
+      <input type="password" id="setKey" placeholder="API key (stays on this device)"/>
+      <input type="text" id="setModel" placeholder="Model ID, e.g. gpt-4o-mini"/>
+      <span class="hint">Ghost Coach answers offline by default. Add a key to get AI replies — it is sent only to the provider you choose, never hard-coded.</span>
+    </label>
+    <div class="sheet-actions">
+      <button class="btn" id="setCancel">Close</button>
+      <button class="btn accent" id="setSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ALARM OVERLAY ============ -->
+<div class="backdrop hidden" id="alarmBackdrop" style="align-items:center">
+  <div class="glass sheet" style="border-radius:32px;text-align:center;align-items:center" role="alertdialog" aria-modal="true">
+    <div style="font-size:54px;filter:drop-shadow(0 0 18px rgba(194,232,158,.5))">👻</div>
+    <h3 style="font-size:24px">Time’s up.</h3>
+    <p id="alarmMsg" style="font-size:16px;line-height:1.55;color:var(--text-primary)"></p>
+    <p style="font-size:13px;color:var(--text-secondary)" id="alarmMeta"></p>
+    <button class="btn accent" id="alarmDismiss" style="width:100%">I’m up — let’s go</button>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+<script>
+'use strict';
+
+/* ===================== STATE + STORAGE ===================== */
+const LS_KEY = 'readyByEight.v1';
+const MAX_REMINDERS = 8;
+const FIRE_WINDOW_MS = 90 * 1000;
+const REM_LABELS = { once: 'Once', daily: 'Every day', weekdays: 'Mon–Fri', weekends: 'Weekends' };
+const CHALLENGES = [
+  'Drink a full glass of water before anything else.',
+  'Make your bed — no phone until it is done.',
+  'Ten slow breaths at the window before you scroll.',
+  'Stretch for two minutes: neck, shoulders, back.',
+  'Write one line: the single most important thing today.',
+  'Step outside for five minutes of daylight.',
+  'Do 15 push-ups or 30 squats — right now.',
+  'Text one person something you appreciate about them.',
+  'Tidy one surface: desk, counter or table.',
+  'Eat a real breakfast before coffee.',
+  'No phone for the first 20 minutes awake.',
+  'Say out loud one thing you will win today.'
+];
+
+const store = { reminders: [], challengeDoneKey: null, ai: { base: '', key: '', model: '' }, chat: [] };
+
+function load() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const p = JSON.parse(raw);
+    store.reminders = Array.isArray(p.reminders) ? p.reminders : [];
+    store.challengeDoneKey = p.challengeDoneKey || null;
+    store.ai = Object.assign({ base: '', key: '', model: '' }, p.ai || {});
+    store.chat = Array.isArray(p.chat) ? p.chat : [];
+  } catch (e) { console.warn('load failed', e); }
+}
+function save() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      reminders: store.reminders,
+      challengeDoneKey: store.challengeDoneKey,
+      ai: store.ai,
+      chat: store.chat.slice(-120)
+    }));
+  } catch (e) { console.warn('save failed', e); }
+}
+
+/* ===================== UTILS ===================== */
+const $ = (id) => document.getElementById(id);
+const pad2 = (n) => String(n).padStart(2, '0');
+function parseHM(str) { const [h, m] = str.split(':').map(Number); return { h, m }; }
+function dayKey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+function show(el) { el.classList.remove('hidden'); }
+function hide(el) { el.classList.add('hidden'); }
+let toastTimer = null;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  show(t);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => hide(t), 2600);
+}
+
+/* ===================== SCHEDULING (tested logic) ===================== */
+function nextOccurrence(rem, now) {
+  const { h, m } = parseHM(rem.time);
+  let t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+  for (let i = 0; i < 8; i++) {
+    const dow = t.getDay();
+    const fits =
+      (rem.repeat === 'daily') ||
+      (rem.repeat === 'weekdays' && dow >= 1 && dow <= 5) ||
+      (rem.repeat === 'weekends' && (dow === 0 || dow === 6)) ||
+      (rem.repeat === 'once');
+    if (fits && t.getTime() > now.getTime()) return t;
+    t = new Date(t.getTime() + 24 * 60 * 60 * 1000);
+  }
+  return t;
+}
+function isDue(rem, now) {
+  if (!rem.enabled) return false;
+  if (rem.repeat === 'once' && rem.firedOnce) return false;
+  const key = dayKey(now) + ' ' + rem.time;
+  if (rem.lastFired === key) return false;
+  const { h, m } = parseHM(rem.time);
+  const t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+  const delta = now.getTime() - t.getTime();
+  return delta >= 0 && delta <= FIRE_WINDOW_MS;
+}
+
+/* ===================== NOTIFICATIONS + AUDIO ===================== */
+async function requestNotifs() {
+  if (!('Notification' in window)) { toast('This browser has no notification support'); return; }
+  try {
+    const p = await Notification.requestPermission();
+    toast(p === 'granted' ? 'Notifications on ✓' : 'Notifications blocked — alarms still ring in-tab');
+  } catch (e) { toast('Could not request notification permission'); }
+}
+function notify(title, body) {
+  try {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, { body, tag: 'rbe-alarm' });
+    }
+  } catch (e) { /* service-worker-less mobile failures: alarm still rings */ }
+}
+let audioCtx = null, ringTimer = null;
+function beepPattern() {
+  const ctx = audioCtx || (audioCtx = new (window.AudioContext || window.webkitAudioContext)());
+  const t0 = ctx.currentTime;
+  [0, 0.28, 0.56].forEach((off) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(880, t0 + off);
+    o.frequency.setValueAtTime(660, t0 + off + 0.12);
+    g.gain.setValueAtTime(0.0001, t0 + off);
+    g.gain.exponentialRampToValueAtTime(0.25, t0 + off + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + off + 0.22);
+    o.connect(g).connect(ctx.destination);
+    o.start(t0 + off);
+    o.stop(t0 + off + 0.25);
+  });
+}
+function ringStart() {
+  ringStop();
+  try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {}
+  beepPattern();
+  ringTimer = setInterval(beepPattern, 1400);
+}
+function ringStop() { if (ringTimer) { clearInterval(ringTimer); ringTimer = null; } }
+
+/* ===================== CLOCK + TICK LOOP ===================== */
+let currentAlarm = null;
+function renderClock(now) {
+  $('clockTime').innerHTML = pad2(now.getHours()) + ':' + pad2(now.getMinutes()) +
+    '<span class="sec">:' + pad2(now.getSeconds()) + '</span>';
+  $('clockDate').textContent = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  const upcoming = store.reminders.filter((r) => r.enabled)
+    .map((r) => ({ r, at: nextOccurrence(r, now) }))
+    .sort((a, b) => a.at - b.at)[0];
+  $('nextSummary').textContent = upcoming
+    ? 'Next: ' + upcoming.r.time + ' · ' + REM_LABELS[upcoming.r.repeat] + ' · in ' + humanDelta(upcoming.at, now)
+    : 'No reminders yet — tap “New reminder”.';
+}
+function humanDelta(target, now) {
+  let s = Math.max(1, Math.round((target - now) / 1000));
+  const h = Math.floor(s / 3600); s -= h * 3600;
+  const m = Math.floor(s / 60); s -= m * 60;
+  if (h > 0) return h + 'h ' + m + 'm';
+  if (m > 0) return m + 'm ' + s + 's';
+  return s + 's';
+}
+function tick() {
+  const now = new Date();
+  renderClock(now);
+  for (const rem of store.reminders) {
+    if (isDue(rem, now)) {
+      rem.lastFired = dayKey(now) + ' ' + rem.time;
+      if (rem.repeat === 'once') rem.firedOnce = true;
+      save();
+      fireAlarm(rem);
+      break;
+    }
+  }
+}
+function fireAlarm(rem) {
+  currentAlarm = rem;
+  const line = coachAlarmLine(rem);
+  $('alarmMsg').textContent = line;
+  $('alarmMeta').textContent = rem.time + ' · ' + REM_LABELS[rem.repeat];
+  show($('alarmBackdrop'));
+  ringStart();
+  notify('⏰ ' + rem.time + ' — Ghost Coach', line);
+  try { navigator.vibrate && navigator.vibrate([400, 200, 400, 200, 600]); } catch (e) {}
+  coachSay(line);
+}
+function dismissAlarm() {
+  ringStop();
+  hide($('alarmBackdrop'));
+  currentAlarm = null;
+  switchTab('chat');
+}
+
+/* ===================== REMINDER LIST + SHEET ===================== */
+let editingId = null;
+function renderReminders() {
+  const list = $('remList');
+  list.innerHTML = '';
+  $('remCount').textContent = String(store.reminders.length);
+  if (!store.reminders.length) {
+    const empty = document.createElement('p');
+    empty.className = 'empty';
+    empty.textContent = 'Nothing scheduled. Ghost Coach can’t push you without a target — add one.';
+    list.appendChild(empty);
+    return;
+  }
+  const sorted = store.reminders.slice().sort((a, b) => a.time.localeCompare(b.time));
+  for (const rem of sorted) {
+    const row = document.createElement('div');
+    row.className = 'rem-item';
+    const left = document.createElement('div');
+    left.innerHTML = '<div class="rem-time"></div><div class="rem-sub"></div>';
+    left.querySelector('.rem-time').textContent = rem.time;
+    left.querySelector('.rem-sub').textContent =
+      REM_LABELS[rem.repeat] + (rem.repeat === 'once' && rem.firedOnce ? ' · done' : '');
+    const right = document.createElement('div');
+    right.style.display = 'flex';
+    right.style.gap = '8px';
+    right.style.alignItems = 'center';
+    const sw = document.createElement('span');
+    sw.className = 'tgl' + (rem.enabled ? ' on' : '');
+    sw.setAttribute('role', 'switch');
+    sw.onclick = () => { rem.enabled = !rem.enabled; save(); renderReminders(); };
+    const del = document.createElement('button');
+    del.className = 'chip-btn danger';
+    del.textContent = '🗑';
+    del.onclick = () => {
+      store.reminders = store.reminders.filter((r) => r.id !== rem.id);
+      save(); renderReminders(); renderChallenge();
+    };
+    row.onclick = (ev) => { if (ev.target === sw || ev.target === del) return; openRemSheet(rem); };
+    right.appendChild(sw);
+    right.appendChild(del);
+    row.appendChild(left);
+    row.appendChild(right);
+    list.appendChild(row);
+  }
+  for (const rem of store.reminders) if (!rem.enabled) {
+    const el = list.querySelector('.rem-item:nth-child(' + (sorted.indexOf(rem) + 1) + ')');
+    if (el) el.classList.add('off');
+  }
+}
+function openRemSheet(rem) {
+  editingId = rem ? rem.id : null;
+  $('remSheetTitle').textContent = rem ? 'Edit reminder' : 'New reminder';
+  $('remTime').value = rem ? rem.time : '07:00';
+  $('remEnabled').checked = rem ? rem.enabled : true;
+  document.querySelectorAll('#remRepeat .seg-btn').forEach((b) =>
+    b.classList.toggle('active', rem ? b.dataset.v === rem.repeat : b.dataset.v === 'daily'));
+  editingId ? show($('remDelete')) : hide($('remDelete'));
+  show($('remBackdrop'));
+}
+function closeRemSheet() { hide($('remBackdrop')); }
+function saveRemSheet() {
+  const time = $('remTime').value;
+  if (!time) { toast('Pick a time first'); return; }
+  const repeat = document.querySelector('#remRepeat .seg-btn.active').dataset.v;
+  if (editingId) {
+    const rem = store.reminders.find((r) => r.id === editingId);
+    Object.assign(rem, { time, repeat, enabled: $('remEnabled').checked });
+    if (rem.repeat !== 'once') delete rem.firedOnce;
+  } else {
+    if (store.reminders.length >= MAX_REMINDERS) { toast('Maximum ' + MAX_REMINDERS + ' reminders'); return; }
+    store.reminders.push({ id: crypto.randomUUID(), time, repeat, enabled: $('remEnabled').checked });
+  }
+  save(); renderReminders(); closeRemSheet();
+  toast('Ghost Coach is on it 👻');
+}
+
+/* ===================== DAILY CHALLENGE ===================== */
+function challengeFor(dateKey) {
+  let hash = 0;
+  for (const ch of dateKey) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return CHALLENGES[hash % CHALLENGES.length];
+}
+function renderChallenge() {
+  const key = dayKey(new Date());
+  $('challengeText').textContent = challengeFor(key);
+  const done = store.challengeDoneKey === key;
+  $('challengeBtn').classList.toggle('hidden', done);
+  $('challengeDone').classList.toggle('hidden', !done);
+}
+function completeChallenge() {
+  store.challengeDoneKey = dayKey(new Date());
+  save(); renderChallenge();
+  coachSay('Challenge done. That’s the version of you I’m coaching. Same time tomorrow — no negotiations. 💪');
+  toast('Logged. Ghost Coach saw that.');
+}
+</script>
+<script>
+'use strict';
+
+/* ===================== TABS ===================== */
+function switchTab(name) {
+  document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
+  document.querySelectorAll('.tabbar .tab').forEach((t) => t.classList.remove('active'));
+  const v = document.getElementById('view-' + name);
+  const b = document.querySelector('.tabbar .tab[data-tab="' + name + '"]');
+  if (v) v.classList.add('active');
+  if (b) b.classList.add('active');
+  if (name === 'chat') { renderChat(); maybeGreet(); }
+}
+
+/* ===================== GHOST COACH — OFFLINE BRAIN ===================== */
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+const PUSH = [
+  'No. Get up. You made this alarm for a reason.',
+  'Future-you is watching. Don’t make them do this alone.',
+  'You don’t need motivation. You need momentum. One rep. Now.',
+  'Excuses don’t move the needle. Feet on the floor. Go.',
+  'Hard is the point. Do the hard thing while it’s still hard.',
+  'Nobody is coming. That’s the good news — it’s all you, and you’re enough.',
+  'You’ve done harder things before breakfast. Prove it again.',
+  'Five minutes. Start with five minutes and finish the whole thing.',
+  'Discipline is remembering what you want. Remember it. Move.',
+  'The version of you that quits is not the version you’re building.'
+];
+const MOTIVATE = [
+  'Look how far you’ve come. Keep the streak alive — one more round.',
+  'You showed up. That already beats everyone still in bed.',
+  'Momentum is real: yesterday’s effort is today’s fuel. Spend it.',
+  'Small wins stack. This is one of them. Keep stacking.',
+  'You are the kind of person who does the thing. Act like it. Be it.'
+];
+const TIRED = [
+  'Tired is data, not identity. Water, light on your face, ten breaths — then move.',
+  'Low battery is fine. Move anyway; energy shows up after the first step, not before.',
+  'Rest is planned, excuses aren’t. Do the smallest version, then decide.'
+];
+const OVERSLEPT = [
+  'Fine. Alarm won this round. Next one, you win. Get moving — the day is still yours.',
+  'Slept through it? Okay. Shrink the goal, not the standard: one task, right now.'
+];
+const PRAISE = [
+  'Knew it. You don’t break promises to yourself. What’s next?',
+  'That’s the streak sound. Keep it ringing.',
+  'Logged and celebrated. Now carry that energy into the day.'
+];
+function classify(t) {
+  const s = t.toLowerCase();
+  if (/(finished|completed|did it|done( with| it)?|won)\b/.test(s)) return 'praise';
+  if (/(overslept|slept (in|through)|missed|late\b)/.test(s)) return 'overslept';
+  if (/(tired|exhausted|sleepy|no energy|don'?t feel|can'?t\b|struggl)/.test(s)) return 'tired';
+  if (/(push|motivat|lazy|unmotivated|stuck|help me start|kick)/.test(s)) return 'push';
+  if (/(challenge|task|what now|next)/.test(s)) return 'challenge';
+  if (/^(hi|hello|hey|yo|morning)\b/.test(s)) return 'hello';
+  return 'push';
+}
+
+/* ============ COACH REPLY (offline, always works) ============ */
+const challengeToday = () => challengeFor(dayKey(new Date()));
+function coachReply(text) {
+  const kind = classify(text);
+  if (kind === 'praise') return pick(PRAISE);
+  if (kind === 'overslept') return pick(OVERSLEPT);
+  if (kind === 'tired') return pick(TIRED);
+  if (kind === 'challenge') return 'Today’s challenge: “' + challengeToday() + '” No negotiating. Report back when it’s done.';
+  if (kind === 'hello') return 'There you are. Today’s challenge: “' + challengeToday() + '” Let’s move.';
+  return pick(PUSH);
+}
+
+/* ============ CHAT UI ============ */
+function addMsg(role, text, doSave) {
+  store.chat.push({ role: role, text: text, at: Date.now() });
+  if (store.chat.length > 120) store.chat.shift();
+  if (doSave !== false) save();
+  renderChat();
+}
+function bubbleEl(role, text) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  const av = document.createElement('span');
+  av.className = 'avatar';
+  av.textContent = role === 'coach' ? '👻' : '🙂';
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  b.textContent = text;
+  div.appendChild(av);
+  div.appendChild(b);
+  return div;
+}
+function renderChat() {
+  const log = $('chatLog');
+  log.innerHTML = '';
+  if (!store.chat.length) {
+    store.chat.push({ role: 'coach', at: Date.now(),
+      text: 'I’m Ghost Coach. I push, I motivate, and I don’t accept “later”. ' +
+            'Set an alarm, then come talk to me — or just say “give me a push”.' });
+  }
+  for (const m of store.chat) log.appendChild(bubbleEl(m.role, m.text));
+  log.scrollTop = log.scrollHeight;
+}
+function coachSay(text) { addMsg('coach', text); }
+function maybeGreet() {
+  if (window.innerWidth > 700) $('chatText').focus();
+}
+
+/* ============ OPTIONAL AI (off by default, key stays on device) ============ */
+function aiConfigured() { return !!(store.ai.base && store.ai.key && store.ai.model); }
+function updateAiNote() {
+  const note = $('aiModeNote');
+  if (note) note.textContent = aiConfigured() ? 'AI replies on via your provider.' : 'Offline coach mode.';
+}
+async function aiReply(text) {
+  if (!aiConfigured()) return null;
+  const url = store.ai.base.replace(/\/+$/, '') + '/chat/completions';
+  const sys = 'You are Ghost Coach inside the Ready by Eight alarm web app: a pushy, motivating ' +
+    'morning coach. Keep replies under 60 words, punchy and actionable. Never medical advice. ' +
+    'You cannot change alarm settings; tell the user to use the Clock tab for that.';
+  const messages = [{ role: 'system', content: sys }];
+  for (const m of store.chat.slice(-10)) {
+    messages.push({ role: m.role === 'coach' ? 'assistant' : 'user', content: m.text });
+  }
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + store.ai.key },
+      body: JSON.stringify({ model: store.ai.model, messages: messages, max_tokens: 120, temperature: 0.8 })
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const out = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    return (typeof out === 'string' && out.trim()) ? out.trim() : null;
+  } catch (e) { return null; }
+}
+async function handleSend(raw) {
+  const text = (raw || '').trim();
+  if (!text) return;
+  addMsg('user', text);
+  if (!aiConfigured()) {
+    setTimeout(() => addMsg('coach', coachReply(text)), 350);
+    return;
+  }
+  addMsg('coach', '…');
+  const last = $('chatLog').lastElementChild;
+  const pendingBubble = last ? last.querySelector('.bubble') : null;
+  const out = await aiReply(text);
+  const reply = out || coachReply(text);
+  if (pendingBubble) pendingBubble.textContent = reply;
+  store.chat[store.chat.length - 1].text = reply;
+  save();
+}
+
+/* ============ SETTINGS ============ */
+function openSettings() {
+  $('setBase').value = store.ai.base || '';
+  $('setKey').value = store.ai.key || '';
+  $('setModel').value = store.ai.model || '';
+  updateAiNote();
+  show($('setBackdrop'));
+}
+function saveSettings() {
+  store.ai = { base: $('setBase').value.trim(), key: $('setKey').value.trim(), model: $('setModel').value.trim() };
+  save(); updateAiNote(); hide($('setBackdrop'));
+  toast(aiConfigured() ? 'AI replies on — key stays on this device' : 'Offline coach mode');
+}
+
+/* ============ WIRING + INIT ============ */
+let greetedSession = false;
+function wire() {
+  document.querySelectorAll('.tabbar .tab').forEach((b) =>
+    b.addEventListener('click', () => switchTab(b.dataset.tab)));
+  $('newRemBtn').onclick = () => openRemSheet(null);
+  $('remCancel').onclick = closeRemSheet;
+  $('remSave').onclick = saveRemSheet;
+  $('remDelete').onclick = () => {
+    store.reminders = store.reminders.filter((r) => r.id !== editingId);
+    save(); renderReminders(); renderChallenge(); closeRemSheet(); toast('Reminder deleted');
+  };
+  document.querySelectorAll('#remRepeat .seg-btn').forEach((b) =>
+    b.addEventListener('click', () => {
+      document.querySelectorAll('#remRepeat .seg-btn').forEach((x) => x.classList.remove('active'));
+      b.classList.add('active');
+    }));
+  $('remBackdrop').addEventListener('click', (e) => { if (e.target === $('remBackdrop')) closeRemSheet(); });
+  $('setBackdrop').addEventListener('click', (e) => { if (e.target === $('setBackdrop')) hide($('setBackdrop')); });
+  $('settingsBtn').onclick = openSettings;
+  $('setCancel').onclick = () => hide($('setBackdrop'));
+  $('setSave').onclick = saveSettings;
+  $('notifBtn').onclick = requestNotifs;
+  $('testAlarmBtn').onclick = () => {
+    const n = new Date();
+    fireAlarm({ time: pad2(n.getHours()) + ':' + pad2(n.getMinutes()), repeat: 'daily' });
+  };
+  $('alarmDismiss').onclick = dismissAlarm;
+  $('challengeBtn').onclick = completeChallenge;
+  $('chatForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const v = $('chatText').value;
+    $('chatText').value = '';
+    handleSend(v);
+  });
+  document.querySelectorAll('#quickRow button').forEach((b) =>
+    b.addEventListener('click', () => handleSend(b.dataset.q)));
+  $('clearChatBtn').onclick = () => {
+    store.chat = []; greetedSession = false; save(); renderChat(); toast('Chat cleared');
+  };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeRemSheet(); hide($('setBackdrop')); }
+  });
+}
+function init() {
+  load();
+  renderReminders();
+  renderChallenge();
+  renderChat();
+  updateAiNote();
+  wire();
+  tick();
+  setInterval(tick, 1000);
+}
+init();
+</script>
+</body>
+</html>
