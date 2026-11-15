@@ -1,220 +1,1631 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<meta name="theme-color" content="#B9A6FF"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="description" content="Ghost Alarm: alarms, habits, sleep journal and a voice coach that gets you up."/>
-<title>Ghost Alarm — Rise. Grow. Glow.</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E👻%3C/text%3E%3C/svg%3E"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F7F4FF">
+<title>Ghost Alarm — wake up with your Ghost Coach</title>
 <style>
+/* ------------------------------------------------ tokens: light violet, ghost themed */
 :root{
-  --violet:#7357D9;--violet-deep:#4C34A0;--violet-soft:#B9A6FF;--violet-pale:#EDE7FF;--lavender-soft:#F3EEFF;
-  --lavender:#F8F5FF;--paper:#FFFFFF;--ink:#241F38;--muted:#7A7289;--line:#E6DFF6;
-  --success:#2F8A6C;--danger:#B8455F;--amber:#A2681A;
-  --shadow:0 12px 34px rgba(76,52,160,.09);--shadow-sm:0 6px 18px rgba(76,52,160,.06);
-  --radius:26px;--safe-bottom:max(env(safe-area-inset-bottom),18px);
+  --violet:#7C5CFF;
+  --violet-dark:#5B3FD6;
+  --violet-deep:#33245F;
+  --violet-pale:#EDE7FF;
+  --violet-soft:#F6F3FF;
+  --cream:#FBFAFF;
+  --ink:#241C3A;
+  --ink-soft:#6F688A;
+  --line:#E7E1F9;
+  --good:#27B486;
+  --warn:#F5A623;
+  --bad:#F0627C;
+  --r:22px;
+  --shadow:0 10px 30px rgba(64,42,140,.10);
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{background:#DED5F6}
-body{font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif;background:var(--lavender);color:var(--ink);min-height:100dvh;max-width:560px;margin:0 auto;padding:0 18px 122px;line-height:1.45}
-button,input,select,textarea{font:inherit;color:inherit}
-button{cursor:pointer;transition:transform .16s ease,opacity .16s ease}
-button:active{transform:scale(.975)}
-button:disabled{opacity:.55;cursor:not-allowed}
-:focus-visible{outline:3px solid rgba(115,87,217,.3);outline-offset:2px}
-h1,h2,h3{line-height:1.15}
-.view{display:none}
-.view.active{display:block;animation:appear .26s ease}
-@keyframes appear{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.app-header{padding-top:max(env(safe-area-inset-top),26px);display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
-.brand{display:flex;align-items:center;gap:11px;min-width:0}
-.brand-mark{width:45px;height:45px;border-radius:16px;background:linear-gradient(150deg,var(--violet-soft),var(--violet));display:grid;place-items:center;font-size:24px;box-shadow:0 8px 20px rgba(115,87,217,.26);flex-shrink:0}
-.brand-name{font-size:17px;font-weight:800;letter-spacing:-.4px}
-.brand-tag{font-size:10px;color:var(--muted);letter-spacing:1.4px;text-transform:uppercase;font-weight:750}
-.icon-btn{width:42px;height:42px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--violet-deep);display:grid;place-items:center;font-size:18px;flex-shrink:0}
-.eyebrow{font-size:10.5px;letter-spacing:1.7px;text-transform:uppercase;color:var(--violet);font-weight:800}
-.page-title{font-size:31px;letter-spacing:-1.1px;font-weight:800;margin-top:5px}
-.page-subtitle{font-size:13px;color:var(--muted);margin-top:6px}
-.section-header{padding-top:max(env(safe-area-inset-top),26px);margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.section-actions{display:flex;gap:8px;flex-shrink:0}
-.add-btn{border:0;background:linear-gradient(150deg,var(--violet-soft),var(--violet));color:#fff;width:44px;height:44px;border-radius:15px;font-size:24px;line-height:1;box-shadow:0 8px 18px rgba(115,87,217,.26)}
-.hero{position:relative;overflow:hidden;border-radius:32px;padding:24px 22px;background:linear-gradient(150deg,#AE97F7 0%,#8265DE 58%,#5E42B8 100%);color:#fff;box-shadow:0 18px 38px rgba(94,66,184,.26)}
-.hero:after{content:"👻";position:absolute;right:-6px;bottom:-26px;font-size:120px;opacity:.14;transform:rotate(-9deg);pointer-events:none}
-.hero-top{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;z-index:1}
-.hero-date{font-size:11.5px;font-weight:700;opacity:.82;letter-spacing:.3px}
-.hero-badge{font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;background:rgba(255,255,255,.16);padding:5px 9px;border-radius:20px}
-.hero-time{font-size:62px;line-height:1.02;letter-spacing:-3.4px;font-weight:750;margin-top:12px;font-variant-numeric:tabular-nums;position:relative;z-index:1}
-.hero-time small{font-size:17px;letter-spacing:0;font-weight:650;margin-left:6px;opacity:.78}
-.hero-next{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-top:12px;position:relative;z-index:1;opacity:.95}
-.live-dot{width:8px;height:8px;border-radius:50%;background:#DCFFD9;box-shadow:0 0 0 5px rgba(220,255,217,.14);flex-shrink:0}
-.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-top:15px}
-.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-.card-title{font-size:16.5px;font-weight:800;letter-spacing:-.3px}
-.text-btn{border:0;background:transparent;color:var(--violet);font-size:12.5px;font-weight:750;padding:4px}
-.muted{color:var(--muted)}
-.challenge-card{display:flex;gap:13px;align-items:flex-start;background:linear-gradient(140deg,#EFE8FF,#FFFFFF 70%)}
-.feature-icon{width:44px;height:44px;border-radius:15px;background:var(--violet-pale);display:grid;place-items:center;font-size:21px;flex-shrink:0}
-.challenge-text{font-size:14.5px;font-weight:650;margin:5px 0 11px;line-height:1.5}
-.check-btn{border:0;border-radius:12px;background:var(--violet);color:#fff;padding:9px 14px;font-size:12px;font-weight:750}
-.check-btn.done{background:#DDF3E9;color:var(--success)}
-.coach-teaser{display:flex;align-items:center;gap:13px;width:100%;text-align:left;border:1px solid var(--line);background:var(--paper);border-radius:22px;padding:16px;margin-top:14px;box-shadow:var(--shadow)}
-.coach-teaser .ghost{font-size:32px;flex-shrink:0}
-.coach-teaser .quote{font-size:12.5px;color:var(--muted);flex:1;min-width:0}
-.coach-teaser .quote strong{color:var(--ink);font-size:14px}
-.coach-teaser .arrow{color:var(--violet);font-size:20px;flex-shrink:0}
-.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-.mini-card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:16px;text-align:left;box-shadow:var(--shadow-sm)}
-.mini-card .big{font-size:22px;font-weight:800;letter-spacing:-.7px;margin-top:9px}
-.mini-card .small{font-size:11.5px;color:var(--muted);margin-top:2px}
-.alarm-card{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
-.alarm-card.off{opacity:.6}
-.alarm-top{display:flex;align-items:center;gap:11px}
-.alarm-symbol{width:42px;height:42px;border-radius:14px;background:var(--violet-pale);display:grid;place-items:center;font-size:20px;flex-shrink:0}
-.alarm-label{font-size:14px;font-weight:750;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.priority-tag{font-size:9px;font-weight:800;letter-spacing:.7px;color:var(--amber);background:#FDF1DC;border-radius:7px;padding:3px 6px;flex-shrink:0}
-.alarm-main{display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:10px}
-.alarm-time{font-size:36px;font-weight:750;letter-spacing:-1.6px;line-height:1}
-.alarm-time small{font-size:13px;letter-spacing:0;color:var(--muted);font-weight:650;margin-left:2px}
-.alarm-meta{font-size:11.5px;color:var(--muted);margin-top:6px;text-align:right}
-.alarm-meta .missed{color:var(--danger);font-weight:750}
-.alarm-actions{display:flex;justify-content:space-between;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
-.alarm-actions button{border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:650;padding:4px 2px}
-.alarm-actions .delete{color:var(--danger)}
-.switch{position:relative;width:48px;height:28px;flex-shrink:0;display:inline-block}
-.switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
-.switch-track{position:absolute;inset:0;border-radius:20px;background:#DCD5E8;transition:background .2s;pointer-events:none}
-.switch-track:after{content:"";position:absolute;width:22px;height:22px;border-radius:50%;background:#fff;top:3px;left:3px;box-shadow:0 2px 5px rgba(0,0,0,.16);transition:transform .2s}
-.switch input:checked+.switch-track{background:var(--violet)}
-.switch input:checked+.switch-track:after{transform:translateX(20px)}
-.empty-state{text-align:center;padding:44px 24px;background:var(--paper);border:1px dashed #CFC2EA;border-radius:26px;color:var(--muted)}
-.empty-state .empty-icon{font-size:44px;display:block;margin-bottom:10px}
-.empty-state strong{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
-.empty-state p{font-size:12.5px}
-</style>
-<style>
-.progress-ring{width:110px;height:110px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--violet) var(--progress,0%),var(--violet-pale) 0);position:relative;flex-shrink:0}
-.progress-ring:before{content:"";position:absolute;inset:10px;background:#fff;border-radius:50%}
-.progress-ring div{position:relative;text-align:center}
-.progress-ring strong{display:block;font-size:24px;letter-spacing:-1px}
-.progress-ring span{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
-.habit-overview{display:flex;align-items:center;justify-content:space-between;gap:18px}
-.habit-stats{flex:1;min-width:0}
-.habit-stat{padding:7px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--muted)}
-.habit-stat:last-child{border:0}
-.habit-stat strong{font-size:14px;color:var(--ink)}
-.habit-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
-.habit-row:last-child{border:0;padding-bottom:0}
-.habit-check{width:34px;height:34px;border-radius:12px;border:2px solid #D6CBEA;background:#fff;color:#fff;font-size:16px;display:grid;place-items:center;flex-shrink:0}
-.habit-check.done{background:var(--violet);border-color:var(--violet)}
-.habit-info{flex:1;min-width:0}
-.habit-name{font-size:14.5px;font-weight:750}
-.habit-goal{font-size:11.5px;color:var(--muted);margin-top:2px}
-.habit-streak{font-size:11px;color:var(--violet-deep);font-weight:750;text-align:right;flex-shrink:0}
-.habit-streak small{display:block;font-size:9px;color:var(--muted);font-weight:600}
-.habit-delete{border:0;background:transparent;color:#C0B6D2;font-size:17px;padding:2px 4px;flex-shrink:0}
-.sleep-score{display:flex;align-items:center;gap:18px}
-.sleep-score-number{font-size:44px;line-height:1;font-weight:800;color:var(--violet-deep);letter-spacing:-2px}
-.sleep-score-number small{font-size:14px;letter-spacing:0;color:var(--muted)}
-.sleep-quality{font-size:16px;font-weight:750}
-.sleep-note{font-size:11.5px;color:var(--muted);margin-top:3px}
-.stage-bar{height:15px;border-radius:10px;overflow:hidden;display:flex;margin:20px 0 10px}
-.stage-awake{background:#DCD0FA}.stage-light{background:#A48BEA}.stage-deep{background:#5C41AE}
-.stage-legend{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);gap:6px}
-.stage-legend i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
-.disclaimer{font-size:11px;color:var(--muted);line-height:1.55;background:#F1EBFB;border-radius:15px;padding:12px;margin-top:14px}
-.sleep-log{padding:12px 0;border-top:1px solid var(--line);display:flex;align-items:center;gap:11px}
-.sleep-log:first-child{border-top:0;padding-top:0}
-.sleep-log-icon{font-size:20px}
-.sleep-log-info{flex:1;min-width:0}
-.sleep-log-info strong{font-size:13.5px;display:block}
-.sleep-log-info span{font-size:11px;color:var(--muted)}
-.sound-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.sound-card{border:1px solid var(--line);border-radius:20px;background:#fff;padding:0;overflow:hidden;text-align:left;box-shadow:var(--shadow-sm)}
-.sound-art{height:80px;display:grid;place-items:center;font-size:34px;position:relative}
-.sound-card.playing{border:2px solid var(--violet)}
-.sound-bars{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:3px;align-items:flex-end;height:14px}
-.sound-bars i{width:3px;background:rgba(255,255,255,.9);border-radius:2px;animation:bar .9s ease-in-out infinite}
-.sound-bars i:nth-child(1){height:8px;animation-delay:0s}
-.sound-bars i:nth-child(2){height:14px;animation-delay:.2s}
-.sound-bars i:nth-child(3){height:6px;animation-delay:.4s}
-@keyframes bar{50%{transform:scaleY(.4)}}
-.sound-info{padding:10px 11px 11px;display:flex;align-items:center;justify-content:space-between;gap:6px}
-.sound-name{font-size:12.5px;font-weight:750}
-.sound-play{font-size:12px;color:var(--violet)}
-.coach-hero{border-radius:28px;padding:22px;background:linear-gradient(150deg,#7E64D8,#4A2F9A);color:#fff;position:relative;overflow:hidden}
-.coach-hero:after{content:"👻";position:absolute;right:-10px;top:-14px;font-size:104px;opacity:.13;pointer-events:none}
-.coach-hero .ghost{font-size:48px;filter:drop-shadow(0 7px 10px rgba(0,0,0,.16))}
-.coach-hero h2{font-size:21px;margin-top:8px;letter-spacing:-.6px}
-.coach-hero p{font-size:12.5px;opacity:.8;margin-top:4px;max-width:88%}
-.voice-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);padding:7px 11px;border-radius:20px;font-size:10.5px;margin-top:12px;border:0;color:#fff;font-weight:650}
-.chat-wrap{display:flex;flex-direction:column;margin-top:14px}
-.chat-messages{max-height:46dvh;min-height:170px;overflow-y:auto;padding:4px 2px 8px;scroll-behavior:smooth}
-.chat-bubble{max-width:88%;padding:12px 14px;border-radius:19px;margin-bottom:10px;font-size:13.5px;white-space:pre-wrap;word-break:break-word;line-height:1.5}
-.chat-bubble.ghost{background:#fff;border:1px solid var(--line);border-bottom-left-radius:6px;margin-right:auto}
-.chat-bubble.user{background:var(--violet);color:#fff;margin-left:auto;border-bottom-right-radius:6px}
-.chat-bubble .ts{font-size:9px;opacity:.55;margin-top:5px;text-align:right}
-.quick-replies{display:flex;gap:7px;overflow-x:auto;padding:6px 0 10px;scrollbar-width:none}
-.quick-replies::-webkit-scrollbar{display:none}
-.quick-replies button{border:1px solid #D9CEF2;background:#fff;color:var(--violet-deep);border-radius:16px;padding:8px 12px;font-size:11px;font-weight:650;white-space:nowrap}
-.chat-form{display:flex;gap:8px}
-.chat-form input{flex:1;min-width:0;border:1px solid var(--line);border-radius:17px;background:#fff;padding:13px 15px;font-size:14px}
-.send-btn{border:0;border-radius:16px;background:var(--violet);color:#fff;width:48px;font-size:17px;flex-shrink:0}
-.overlay{position:fixed;inset:0;background:rgba(36,31,56,.46);z-index:100;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
-.overlay.open{display:flex;animation:fade .18s ease}
-@keyframes fade{from{opacity:0}to{opacity:1}}
-.sheet{background:var(--lavender);border-radius:30px 30px 0 0;padding:20px 18px var(--safe-bottom);width:100%;max-width:560px;max-height:92dvh;overflow-y:auto;box-shadow:0 -15px 45px rgba(36,31,56,.2);animation:rise .24s ease}
-@keyframes rise{from{transform:translateY(28px)}to{transform:none}}
-.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
-.sheet-title{font-size:20px;font-weight:800;letter-spacing:-.5px}
-.close-btn{border:0;background:#E8E0F5;color:var(--violet-deep);width:34px;height:34px;border-radius:12px;font-size:17px;flex-shrink:0}
-.field{margin-bottom:15px}
-.field label{display:block;font-size:11.5px;font-weight:750;color:var(--muted);margin-bottom:6px;letter-spacing:.2px}
-.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:15px;padding:12px 13px;min-height:47px;font-size:14px}
-.field textarea{resize:vertical;min-height:74px}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.choice-row{display:flex;gap:7px;flex-wrap:wrap}
-.choice{flex:1;min-width:60px;border:1px solid var(--line);border-radius:13px;background:#fff;color:var(--muted);padding:10px 5px;font-size:11px;font-weight:700}
-.choice.selected{background:var(--violet);border-color:var(--violet);color:#fff}
-.emoji-choices .choice{font-size:22px;min-width:46px;padding:8px 4px}
-.primary-btn{width:100%;border:0;border-radius:17px;background:linear-gradient(150deg,var(--violet-soft),var(--violet));color:#fff;padding:15px;font-weight:800;font-size:14.5px;box-shadow:0 8px 18px rgba(115,87,217,.22)}
-.secondary-btn{width:100%;border:1px solid var(--line);border-radius:17px;background:#fff;color:var(--violet-deep);padding:13px;font-weight:750;font-size:13.5px;margin-top:9px}
-.danger-btn{color:var(--danger)}
-.settings-group{background:#fff;border:1px solid var(--line);border-radius:22px;padding:2px 15px;margin-bottom:15px}
-.setting-row{display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid var(--line)}
-.setting-row:last-child{border:0}
-.setting-info{flex:1;min-width:0}
-.setting-title{font-size:13.5px;font-weight:700}
-.setting-desc{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.45}
-.setting-row select,.setting-row input[type=number]{max-width:118px;border:1px solid var(--line);border-radius:10px;padding:7px;background:#fff;font-size:12.5px}
-.setting-row input[type=number]{max-width:70px}
-.settings-pad{padding:2px 0 14px}
-.privacy-note{text-align:center;color:var(--muted);font-size:10.5px;line-height:1.6;padding:4px 16px 16px}
-.knowledge-item{display:flex;gap:11px;padding:13px 0;border-bottom:1px solid var(--line)}
-.knowledge-item:last-child{border:0}
-.k-icon{width:34px;height:34px;border-radius:11px;background:var(--violet-pale);display:grid;place-items:center;font-size:16px;flex-shrink:0}
-.knowledge-item strong{display:block;font-size:13px;margin-bottom:2px}
-.knowledge-item p{font-size:11.5px;color:var(--muted);line-height:1.5}
-.ringer{background:linear-gradient(160deg,#A78CEE,#5B3FAF);color:#fff;border-radius:28px;padding:30px 20px 24px;text-align:center;overflow:hidden}
-.ringer-ghost{font-size:78px;animation:float 2.2s ease-in-out infinite;display:block}
-@keyframes float{50%{transform:translateY(-9px) rotate(3deg)}}
-.ringer-label{font-size:10.5px;letter-spacing:2px;text-transform:uppercase;opacity:.78;margin-top:14px}
-.ringer-title{font-size:26px;font-weight:800;margin:6px 0 12px;letter-spacing:-.6px}
-.ringer-message{font-size:14px;line-height:1.6;opacity:.92;margin-bottom:14px}
-.ringer-challenge{background:rgba(255,255,255,.15);padding:13px;border-radius:16px;font-size:12.5px;margin-bottom:16px;text-align:left}
-.ringer-actions{display:flex;gap:10px}
-.ringer-actions button{flex:1;border:0;border-radius:17px;padding:14px;font-weight:750;font-size:13.5px}
-.ringer-dismiss{background:#fff;color:var(--violet-deep)}
-.ringer-snooze{background:rgba(255,255,255,.2);color:#fff}
-.ringer-speak{border:0;background:transparent;color:#fff;font-size:11.5px;margin-bottom:13px;text-decoration:underline;opacity:.9}
-.toast{position:fixed;left:50%;bottom:104px;transform:translate(-50%,14px);background:var(--ink);color:#fff;border-radius:15px;padding:11px 16px;font-size:12px;z-index:200;opacity:0;pointer-events:none;transition:.24s;max-width:88%;text-align:center;box-shadow:0 10px 26px rgba(36,31,56,.28)}
-.toast.show{opacity:1;transform:translate(-50%,0)}
-@media(min-width:561px){body{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,sans-serif;
+  background:var(--cream);color:var(--ink);padding-bottom:104px;min-height:100vh;
+  background-image:radial-gradient(880px 380px at 50% -170px,var(--violet-pale),transparent 72%);
+  background-repeat:no-repeat;
+}
+h1,h2,h3,h4,p{margin:0}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+
+/* ------------------------------------------------ shell */
+.wrap{max-width:520px;margin:0 auto;padding:0 18px}
+.appbar{position:sticky;top:0;z-index:30;backdrop-filter:blur(14px);
+  background:linear-gradient(180deg,rgba(251,250,255,.96),rgba(251,250,255,.80));
+  border-bottom:1px solid transparent}
+.appbar .wrap{display:flex;align-items:center;gap:12px;padding-top:14px;padding-bottom:12px}
+.logo{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;font-size:20px;
+  background:linear-gradient(150deg,var(--violet),var(--violet-dark));box-shadow:0 8px 18px rgba(92,63,214,.30)}
+.brand{font-weight:700;font-size:16px;letter-spacing:.2px}
+.brand small{display:block;font-weight:500;font-size:11.5px;color:var(--ink-soft);letter-spacing:.3px}
+.appbar .spacer{flex:1}
+.icon-btn{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:16px;
+  background:#fff;border:1px solid var(--line);box-shadow:var(--shadow)}
+
+/* ------------------------------------------------ cards */
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.card + .card{margin-top:14px}
+.card.tint{background:var(--violet-soft);border-color:#DED4FF}
+.sec-title{font-size:12.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--ink-soft);margin:22px 4px 10px}
+.row{display:flex;align-items:center;gap:12px}
+.row.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.muted{color:var(--ink-soft)}
+.small{font-size:12.5px}
+.tiny{font-size:11.5px}
+
+/* ------------------------------------------------ home hero + countdown */
+.hero{background:linear-gradient(155deg,var(--violet),var(--violet-dark));color:#fff;
+  border-radius:26px;padding:22px;box-shadow:0 16px 34px rgba(87,58,200,.28);position:relative;overflow:hidden}
+.hero:after{content:"👻";position:absolute;right:-6px;bottom:-22px;font-size:104px;opacity:.18}
+.hero .lbl{font-size:12px;letter-spacing:1.4px;text-transform:uppercase;opacity:.85}
+.hero-time{font-size:44px;font-weight:800;letter-spacing:-1px;margin:4px 0 2px;line-height:1.05}
+.hero-sub{font-size:13.5px;opacity:.9}
+.hero-next{margin-top:16px;background:rgba(255,255,255,.16);border-radius:16px;padding:10px 12px;
+  display:flex;align-items:center;gap:10px;font-size:13px}
+.hero-next b{font-weight:700}
+
+/* ------------------------------------------------ buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;
+  border-radius:15px;font-weight:650;font-size:14px;border:1px solid transparent;transition:transform .12s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(150deg,var(--violet),var(--violet-dark));color:#fff;
+  box-shadow:0 8px 18px rgba(92,63,214,.28)}
+.btn.soft{background:var(--violet-pale);color:var(--violet-dark);border-color:#DDD2FF}
+.btn.plain{background:#fff;border-color:var(--line);color:var(--ink)}
+.btn.danger{background:#FDEAF0;color:var(--bad);border-color:#FBD3DE}
+.btn.block{width:100%}
+.btn.sm{padding:8px 12px;border-radius:12px;font-size:13px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:9px 13px;border-radius:14px;background:#fff;border:1px solid var(--line);
+  font-size:13px;font-weight:600;color:var(--ink-soft)}
+.chip.on{background:var(--violet-pale);border-color:var(--violet);color:var(--violet-dark)}
+.badge{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;background:var(--violet-pale);color:var(--violet-dark)}
+.badge.good{background:#E4F7F0;color:#128A62}
+.badge.warn{background:#FFF4E0;color:#9A6411}
+.badge.bad{background:#FDEAF0;color:#B3314F}
+
+/* ------------------------------------------------ lists: alarms, habits */
+.item{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--line);
+  border-radius:20px;padding:14px;box-shadow:var(--shadow)}
+.item + .item{margin-top:10px}
+.item.off{opacity:.55}
+.item .ico{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:20px;
+  background:var(--violet-soft);border:1px solid var(--line)}
+.item .time{font-size:22px;font-weight:750;letter-spacing:-.4px}
+.pri{width:8px;height:8px;border-radius:99px;display:inline-block;margin-right:6px}
+.pri.low{background:#BFC6DA}.pri.normal{background:var(--violet)}.pri.high{background:var(--bad)}
+.switch{width:48px;height:29px;border-radius:99px;background:#DEDAF0;position:relative;transition:background .18s;flex:none}
+.switch:after{content:"";position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:99px;
+  background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.16);transition:transform .18s}
+.switch.on{background:var(--violet)}
+.switch.on:after{transform:translateX(19px)}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.dots{display:flex;gap:5px}
+.dot{width:22px;height:22px;border-radius:8px;background:var(--violet-soft);border:1px solid var(--line);
+  display:grid;place-items:center;font-size:10px;color:var(--ink-soft)}
+.dot.hit{background:var(--violet);border-color:var(--violet);color:#fff}
+.ring{width:64px;height:64px;border-radius:99px;display:grid;place-items:center;flex:none;
+  background:conic-gradient(var(--violet) calc(var(--p,0)*1%),var(--violet-pale) 0)}
+.ring span{width:50px;height:50px;border-radius:99px;background:#fff;display:grid;place-items:center;
+  font-size:12px;font-weight:750}
+.empty{text-align:center;padding:26px 10px;color:var(--ink-soft);font-size:13.5px}
+.empty .big{font-size:34px;display:block;margin-bottom:8px}
+
+/* ------------------------------------------------ mini grid, sleep, sounds */
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mini .card{padding:13px;margin:0}
+.mini b{display:block;font-size:20px;font-weight:750;letter-spacing:-.3px}
+.bars{display:flex;align-items:flex-end;gap:7px;height:96px;padding-top:6px}
+.bars .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+.bars .fill{width:100%;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,var(--violet),#A48CFF);min-height:4px}
+.bars .cap{font-size:10px;color:var(--ink-soft)}
+.sound-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sound-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;text-align:left;
+  box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px}
+.sound-card .e{font-size:20px}
+.sound-card .n{font-weight:650;font-size:13.5px}
+.sound-card.on{background:var(--violet-pale);border-color:var(--violet)}
+.log-row{display:flex;justify-content:space-between;align-items:center;padding:11px 2px;border-bottom:1px solid var(--line);font-size:13.5px}
+.log-row:last-child{border-bottom:0}
+
+/* ------------------------------------------------ coach: chat, knowledge */
+.coach-hero{background:linear-gradient(160deg,#8E70FF,var(--violet-dark));color:#fff;border-radius:24px;
+  padding:18px;box-shadow:0 14px 30px rgba(87,58,200,.26)}
+.coach-hero .who{display:flex;align-items:center;gap:12px}
+.coach-hero .av{width:46px;height:46px;border-radius:16px;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:24px}
+.chat{display:flex;flex-direction:column;gap:10px;max-height:46vh;overflow-y:auto;padding:4px 2px}
+.bubble{max-width:86%;padding:11px 14px;border-radius:18px;font-size:14px;line-height:1.45;white-space:pre-wrap}
+.bubble.ghost{background:var(--violet-pale);color:var(--violet-deep);border-bottom-left-radius:6px;align-self:flex-start}
+.bubble.me{background:linear-gradient(150deg,var(--violet),var(--violet-dark));color:#fff;border-bottom-right-radius:6px;align-self:flex-end}
+.quick-reply{padding:9px 13px;border-radius:14px;background:#fff;border:1px solid var(--line);
+  font-size:12.5px;font-weight:600;color:var(--violet-dark);box-shadow:var(--shadow)}
+.composer{display:flex;gap:8px;align-items:center;margin-top:12px}
+.composer input{flex:1;padding:13px 14px;border-radius:16px;border:1px solid var(--line);background:#fff}
+.knowledge-item{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow)}
+.knowledge-item + .knowledge-item{margin-top:10px}
+.knowledge-title{font-size:14.5px;font-weight:700;margin-bottom:6px}
+.knowledge-body{font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+
+/* ------------------------------------------------ forms */
+.field{margin-bottom:12px}
+.field > label{display:block;font-size:12.5px;font-weight:650;color:var(--ink-soft);margin-bottom:6px}
+.field input[type=text],.field input[type=number],.field input[type=time],.field input[type=date],
+.field input[type=password],.field select,.field textarea{
+  width:100%;padding:12px 13px;border-radius:15px;border:1px solid var(--line);background:#fff}
+.field textarea{min-height:74px;resize:vertical}
+.field input[type=range]{width:100%;accent-color:var(--violet)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hint{font-size:11.5px;color:var(--ink-soft);margin-top:6px;line-height:1.5}
+
+/* ------------------------------------------------ tabbar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(16px);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom)}
+.tabbar .inner{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.tab{padding:11px 2px 13px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10.5px;font-weight:650;color:var(--ink-soft)}
+.tab .e{font-size:19px;line-height:1}
+.tab.on{color:var(--violet-dark)}
+.tab.on .e{filter:drop-shadow(0 4px 8px rgba(124,92,255,.45))}
+.view{display:none;padding-top:18px}
+.view.on{display:block}
+
+/* ------------------------------------------------ overlays: sheets, ringer, toast */
+.overlay{position:fixed;inset:0;z-index:60;background:rgba(38,26,80,.42);backdrop-filter:blur(3px);
+  display:none;align-items:flex-end;justify-content:center}
+.overlay.on{display:flex}
+.sheet{width:100%;max-width:520px;background:var(--cream);border-radius:26px 26px 0 0;
+  padding:18px 18px calc(24px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto}
+.sheet-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sheet-head h3{font-size:17px;font-weight:750;flex:1}
+.sheet .grid-chips{display:flex;flex-wrap:wrap;gap:8px}
+.grab{width:44px;height:5px;border-radius:99px;background:var(--line);margin:0 auto 14px}
+#ringer{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;text-align:center;padding:30px;color:#fff;
+  background:linear-gradient(165deg,#7C5CFF,#33245F)}
+#ringer.on{display:flex}
+#ringer .ghost{font-size:64px;animation:float 1.6s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+#ringerTime{font-size:52px;font-weight:850;letter-spacing:-1.5px}
+#ringerLabel{font-size:15px;opacity:.9}
+#ringerMsg{font-size:16px;line-height:1.5;max-width:340px;opacity:.97}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:112px;z-index:90;background:#33245F;color:#fff;
+  padding:11px 16px;border-radius:14px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .22s}
+#toast.on{opacity:1}
 </style>
 </head>
 <body>
+
+<header class="appbar">
+  <div class="wrap">
+    <div class="logo">👻</div>
+    <div class="brand">Ghost Alarm<small>Wake up with your Ghost Coach</small></div>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="btnSettings" title="Settings">⚙️</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============================== HOME ============================== -->
+  <section class="view on" id="view-home">
+    <div class="hero">
+      <div class="lbl" id="homeGreet">Good morning</div>
+      <div class="hero-time" id="homeClock">--:--</div>
+      <div class="hero-sub" id="homeDate"></div>
+      <div class="hero-next">
+        <span>⏰</span>
+        <div class="grow" id="homeNext">No alarm set</div>
+        <b id="homeCountdown">—</b>
+      </div>
+    </div>
+
+    <div class="sec-title">Today's ghost challenge</div>
+    <div class="card" id="challengeCard">
+      <div class="row between">
+        <div class="grow">
+          <div class="badge" id="challengeTag">Challenge</div>
+          <div style="font-weight:700;margin-top:8px" id="challengeTitle">Loading…</div>
+          <div class="small muted" style="margin-top:4px" id="challengeBody"></div>
+        </div>
+        <button class="btn soft sm" data-challenge="1" id="challengeBtn">Done</button>
+      </div>
+      <div class="hint" id="challengeStreak"></div>
+    </div>
+
+    <div class="sec-title">Your ghost</div>
+    <div class="card tint">
+      <div class="row">
+        <div class="ico" style="width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:20px;background:#fff">👻</div>
+        <div class="grow">
+          <div style="font-weight:700">Ghost Coach</div>
+          <div class="small muted" id="coachLine">Ready to push you.</div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px;gap:8px">
+        <button class="btn soft sm" data-go="coach">Talk to coach</button>
+        <button class="btn plain sm" id="speakLine">🔊 Hear it</button>
+      </div>
+    </div>
+
+    <div class="sec-title">Right now</div>
+    <div class="mini">
+      <div class="card"><div class="tiny muted">Next alarm</div><b id="statNext">—</b></div>
+      <div class="card"><div class="tiny muted">Habits hit today</div><b id="statHabits">0/0</b></div>
+      <div class="card"><div class="tiny muted">Best streak</div><b id="statStreak">0d</b></div>
+      <div class="card"><div class="tiny muted">Sleep last night</div><b id="statSleep">—</b></div>
+    </div>
+
+    <div class="sec-title">Habits today</div>
+    <div id="homeHabits"></div>
+  </section>
+
+  <!-- ============================== ALARMS ============================== -->
+  <section class="view" id="view-alarms">
+    <div class="row between" style="margin:4px 4px 12px">
+      <h2 style="font-size:19px;font-weight:800">Alarms</h2>
+      <button class="btn primary sm" data-open="alarm">+ New alarm</button>
+    </div>
+    <div id="alarmList"></div>
+  </section>
+
+  <!-- ============================== HABITS ============================== -->
+  <section class="view" id="view-habits">
+    <div class="row between" style="margin:4px 4px 12px">
+      <h2 style="font-size:19px;font-weight:800">Habits</h2>
+      <button class="btn primary sm" data-open="habit">+ New habit</button>
+    </div>
+    <div class="mini" style="margin-bottom:14px">
+      <div class="card"><div class="tiny muted">Done today</div><b id="habitDone">0/0</b></div>
+      <div class="card"><div class="tiny muted">7-day rate</div><b id="habitRate">0%</b></div>
+    </div>
+    <div id="habitList"></div>
+  </section>
+
+  <!-- ============================== SLEEP ============================== -->
+  <section class="view" id="view-sleep">
+    <div class="card tint" style="margin-bottom:14px">
+      <div class="row between">
+        <div>
+          <div class="tiny muted">Last night</div>
+          <div style="font-size:30px;font-weight:800;letter-spacing:-.8px" id="sleepLast">—</div>
+          <div class="small muted" id="sleepSub">Log your hours to see the trend.</div>
+        </div>
+        <button class="btn soft sm" data-open="sleep">Log sleep</button>
+      </div>
+      <div class="hint">Ghost Alarm records what you log and your bedtime timer. It does not measure sleep stages or snoring.</div>
+    </div>
+
+    <div class="sec-title">This week</div>
+    <div class="card"><div class="bars" id="sleepGrid"></div></div>
+
+    <div class="sec-title">Sound to fall asleep</div>
+    <div class="card"><div class="sound-grid" id="soundGrid"></div></div>
+    <div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap" id="timerRow"></div>
+
+    <div class="sec-title">Recent nights</div>
+    <div class="card" id="sleepLog"></div>
+  </section>
+
+  <!-- ============================== COACH ============================== -->
+  <section class="view" id="view-coach">
+    <div class="coach-hero">
+      <div class="who">
+        <div class="av">👻</div>
+        <div class="grow">
+          <div style="font-weight:750;font-size:16px">Ghost Coach</div>
+          <div class="small" style="opacity:.9" id="coachState">Offline brain ready</div>
+        </div>
+        <button class="chip" id="voiceToggle">🔊 Voice on</button>
+      </div>
+      <div style="margin-top:12px;font-size:13.5px;opacity:.95" id="coachPersona"></div>
+    </div>
+
+    <div class="sec-title">Coach chat</div>
+    <div class="card">
+      <div class="chat" id="chatWrap"></div>
+      <div class="chips" id="quickReplies" style="margin-top:10px"></div>
+      <div class="composer">
+        <input id="chatInput" type="text" placeholder="Tell your ghost what you need…" autocomplete="off">
+        <button class="btn primary" id="chatSend">Send</button>
+      </div>
+      <div class="hint" id="chatHint">Works offline. Add your own AI provider in Settings for real coaching replies.</div>
+    </div>
+
+    <div class="sec-title">Alarm messages</div>
+    <div class="card">
+      <div class="row between">
+        <div class="grow">
+          <div style="font-weight:650;font-size:14px">Speak my message out loud</div>
+          <div class="small muted">Your ghost reads the alarm message when the alarm rings.</div>
+        </div>
+        <button class="switch" id="setVoiceSpeak"></button>
+      </div>
+      <div class="row between" style="margin-top:14px">
+        <div class="grow">
+          <div style="font-weight:650;font-size:14px">Also play the alarm tone</div>
+          <div class="small muted">Ring + voice together.</div>
+        </div>
+        <button class="switch" id="setRing"></button>
+      </div>
+      <button class="btn soft block" style="margin-top:14px" id="testRing">🔔 Test ringer + voice</button>
+    </div>
+
+    <div class="sec-title">Ghost knowledge</div>
+    <button class="btn plain block" data-open="knowledge">📖 How your ghost coaches you</button>
+  </section>
+</main>
+
+<!-- ============================== TAB BAR ============================== -->
+<nav class="tabbar">
+  <div class="inner">
+    <button class="tab on" data-nav="home"><span class="e">🏠</span>Home</button>
+    <button class="tab" data-nav="alarms"><span class="e">⏰</span>Alarms</button>
+    <button class="tab" data-nav="habits"><span class="e">✅</span>Habits</button>
+    <button class="tab" data-nav="sleep"><span class="e">🌙</span>Sleep</button>
+    <button class="tab" data-nav="coach"><span class="e">👻</span>Coach</button>
+  </div>
+</nav>
+
+<!-- ============================== SHEETS ============================== -->
+<div class="overlay" id="sheetOverlay">
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="grab"></div>
+
+    <!-- alarm -->
+    <div id="paneAlarm" style="display:none">
+      <div class="sheet-head"><h3 id="alarmSheetTitle">New alarm</h3><button class="icon-btn" data-close="1">✕</button></div>
+      <form id="alarmForm">
+        <div class="two">
+          <div class="field"><label for="aHour">Hour (0–23)</label><input id="aHour" type="number" min="0" max="23" required></div>
+          <div class="field"><label for="aMin">Minute</label><input id="aMin" type="number" min="0" max="59" required></div>
+        </div>
+        <div class="field"><label for="aLabel">Label</label><input id="aLabel" type="text" maxlength="40" placeholder="Morning run"></div>
+        <div class="field"><label>Icon</label><div class="grid-chips" id="iconChips"></div></div>
+        <div class="field"><label>Priority</label><div class="grid-chips" id="priorityChips"></div></div>
+        <div class="field"><label>Repeat</label><div class="grid-chips" id="repeatChips"></div></div>
+        <div class="field" id="dateField" style="display:none">
+          <label for="aDate">Date (for a one-time alarm)</label><input id="aDate" type="date">
+        </div>
+        <div class="field"><label for="aTone">Tone</label><select id="aTone"></select></div>
+        <div class="field"><label for="aSnooze">Snooze length (minutes)</label>
+          <input id="aSnooze" type="number" min="1" max="60" value="5"></div>
+        <div class="field"><label for="aMsg">Your ghost says</label>
+          <textarea id="aMsg" maxlength="220" placeholder="Leave empty and your Ghost Coach picks a line."></textarea>
+          <div class="hint">Spoken out loud when the alarm rings (if voice is on) and shown on the ringer.</div></div>
+        <div class="row between" style="margin:6px 0 14px">
+          <div class="grow">
+            <div style="font-weight:650;font-size:14px">Speak this alarm</div>
+            <div class="small muted">Uses your phone's voice.</div>
+          </div>
+          <button class="switch on" id="aVoice" type="button" data-on="1"></button>
+        </div>
+        <div class="row" style="gap:8px">
+          <button class="btn primary grow" type="submit">Save alarm</button>
+          <button class="btn danger" type="button" id="aDelete" style="display:none">Delete</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- habit -->
+    <div id="paneHabit" style="display:none">
+      <div class="sheet-head"><h3 id="habitSheetTitle">New habit</h3><button class="icon-btn" data-close="1">✕</button></div>
+      <form id="habitForm">
+        <div class="field"><label for="hName">Habit</label>
+          <input id="hName" type="text" maxlength="40" placeholder="Drink 2L water" required></div>
+        <div class="field"><label>Icon</label><div class="grid-chips" id="habitIconChips"></div></div>
+        <div class="two">
+          <div class="field"><label for="hGoal">Goal per day</label>
+            <input id="hGoal" type="number" min="1" max="20" value="1"></div>
+          <div class="field"><label for="hUnit">Unit</label>
+            <input id="hUnit" type="text" maxlength="12" value="time"></div>
+        </div>
+        <div class="field"><label for="hCoach">Ghost Coach line</label>
+          <input id="hCoach" type="text" maxlength="70" placeholder="Discipline beats motivation."></div>
+        <div class="row" style="gap:8px">
+          <button class="btn primary grow" type="submit">Save habit</button>
+          <button class="btn danger" type="button" id="hDelete" style="display:none">Delete</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- sleep -->
+    <div id="paneSleep" style="display:none">
+      <div class="sheet-head"><h3>Log sleep</h3><button class="icon-btn" data-close="1">✕</button></div>
+      <form id="sleepForm">
+        <div class="two">
+          <div class="field"><label for="sBed">Bedtime</label><input id="sBed" type="time" value="23:00" required></div>
+          <div class="field"><label for="sWake">Wake up</label><input id="sWake" type="time" value="07:00" required></div>
+        </div>
+        <div class="field"><label for="sQuality">How rested? <span id="sQualityLabel" class="muted">3/5</span></label>
+          <input id="sQuality" type="range" min="1" max="5" value="3"></div>
+        <div class="row" style="gap:8px">
+          <button class="btn primary grow" type="submit">Save night</button>
+          <button class="btn plain" type="button" id="sleepDelete" style="display:none">Delete today</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- settings -->
+    <div id="paneSettings" style="display:none">
+      <div class="sheet-head"><h3>Settings</h3><button class="icon-btn" data-close="1">✕</button></div>
+      <div class="sec-title" style="margin-top:0">Your AI provider</div>
+      <div class="field"><label for="setBase">Base URL</label>
+        <input id="setBase" type="text" placeholder="https://openrouter.ai/api/v1"></div>
+      <div class="field"><label for="setKey">API key</label>
+        <input id="setKey" type="password" placeholder="YOUR_API_KEY"></div>
+      <div class="field"><label for="setModel">Model id</label>
+        <input id="setModel" type="text" placeholder="openai/gpt-4o-mini"></div>
+      <div class="hint">Use any OpenAI-compatible provider (OpenRouter, OpenAI, Groq, DeepSeek…). Your key is stored only in this browser — never sent anywhere except the provider you name.</div>
+      <div class="field" style="margin-top:12px"><label for="setStyle">Coach style</label>
+        <select id="setStyle">
+          <option value="gentle">Gentle</option>
+          <option value="balanced">Balanced</option>
+          <option value="tough">Tough love</option>
+        </select></div>
+      <button class="btn soft block" id="testAI">Test connection</button>
+      <div class="hint" id="settingsState">Not connected — offline brain only.</div>
+
+      <div class="sec-title">Notifications & voice</div>
+      <div class="row between">
+        <div class="grow"><div style="font-weight:650;font-size:14px">Browser notifications</div>
+          <div class="small muted" id="notifState">Not enabled</div></div>
+        <button class="btn plain sm" id="askNotif">Enable</button>
+      </div>
+      <button class="btn soft block" style="margin-top:14px" id="testVoice">🔊 Test ghost voice</button>
+
+      <div class="sec-title">Danger zone</div>
+      <button class="btn danger block" id="resetAll">Erase all Ghost Alarm data</button>
+      <div class="hint">This clears alarms, habits, sleep logs and your provider settings from this browser.</div>
+    </div>
+
+    <!-- knowledge -->
+    <div id="paneKnowledge" style="display:none">
+      <div class="sheet-head"><h3>Ghost Coach knowledge</h3><button class="icon-btn" data-close="1">✕</button></div>
+      <div id="knowledgeList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== RINGER ============================== -->
+<div id="ringer">
+  <div class="ghost">👻</div>
+  <div id="ringerTime">--:--</div>
+  <div id="ringerLabel">Alarm</div>
+  <div id="ringerMsg">Your ghost is here. Get up.</div>
+  <div class="row" style="gap:10px;margin-top:8px">
+    <button class="btn plain" id="ringerSnooze">Snooze 5 min</button>
+    <button class="btn primary" id="ringerDone" style="color:#fff;background:rgba(255,255,255,.22);box-shadow:none;border:1px solid rgba(255,255,255,.5)">I'm up 👻</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================================
+   GHOST ALARM — single file app.   Sections:
+   1 state + storage   2 helpers + scheduling   3 audio   4 voice/notify
+   5 habits + sleep    6 coach brain + AI       7 renderers
+   8 sheets + ringer + engine + wiring + boot
+   ========================================================================== */
+
+/* ---------------------------------------------------------------- 1 state */
+const KEY = "ghostAlarm.v4";
+
+function defaults() {
+  return {
+    view: "home",
+    settings: { base: "", key: "", model: "", style: "balanced", voiceOn: true, ringOn: true, voiceSpeak: true },
+    alarms: [], habits: [], sleep: [], chat: [],
+    fired: {},
+    challenge: { day: "", id: 0, done: false, streak: 0 },
+    timer: 0
+  };
+}
+
+let S = load();
+
+function load() {
+  let raw = null;
+  try { raw = localStorage.getItem(KEY); } catch (e) { raw = null; }
+  if (!raw) return defaults();
+  try {
+    const d = JSON.parse(raw), base = defaults(), out = Object.assign(base, d);
+    out.settings = Object.assign(base.settings, d.settings || {});
+    out.challenge = Object.assign(base.challenge, d.challenge || {});
+    ["alarms", "habits", "sleep", "chat"].forEach(k => { if (!Array.isArray(out[k])) out[k] = []; });
+    if (typeof out.fired !== "object" || !out.fired) out.fired = {};
+    return out;
+  } catch (e) { return defaults(); }
+}
+
+let saveTimer = null;
+function save() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(function () {
+    saveTimer = null;
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { }
+  }, 120);
+}
+
+function uid() { return Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
+
+/* ------------------------------------------------- 2 helpers + scheduling */
+function pad(n) { return (n < 10 ? "0" : "") + n; }
+function dayKey(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+function todayKey() { return dayKey(new Date()); }
+function parseDay(s) {
+  const p = String(s || "").split("-");
+  return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+}
+function fmt12(h, m) {
+  const ap = h < 12 ? "AM" : "PM";
+  let hh = h % 12; if (hh === 0) hh = 12;
+  return hh + ":" + pad(m) + " " + ap;
+}
+function fmtTime(d) { return fmt12(d.getHours(), d.getMinutes()); }
+function esc(t) {
+  return String(t == null ? "" : t).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+function msText(ms) {
+  if (ms <= 0) return "now";
+  const m = Math.round(ms / 60000), h = Math.floor(m / 60), d = Math.floor(h / 24);
+  if (d > 0) return d + "d " + (h % 24) + "h";
+  if (h > 0) return h + "h " + (m % 60) + "m";
+  return m + " min";
+}
+function repeatText(a) {
+  if (a.repeat === "daily") return "Every day";
+  if (a.repeat === "weekdays") return "Weekdays";
+  if (a.repeat === "weekends") return "Weekends";
+  if (a.repeat === "once") return a.date ? "Once · " + a.date : "Once";
+  return "Every day";
+}
+/* Whether this alarm is scheduled on that calendar day. */
+function repeatsOn(a, date) {
+  const dow = date.getDay();
+  if (a.repeat === "weekdays") return dow >= 1 && dow <= 5;
+  if (a.repeat === "weekends") return dow === 0 || dow === 6;
+  if (a.repeat === "once") return a.date ? dayKey(date) === a.date : true;
+  return true;
+}
+/* The next moment this alarm goes off, after `from`. */
+function nextOccurrence(a, from) {
+  const start = new Date(from.getTime());
+  for (let i = 0; i < 400; i++) {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    if (!repeatsOn(a, d)) continue;
+    const when = new Date(d.getFullYear(), d.getMonth(), d.getDate(), a.h | 0, a.m | 0, 0, 0);
+    if (when.getTime() > from.getTime()) return when;
+  }
+  return null;
+}
+function nextAlarm() {
+  const now = new Date();
+  let best = null;
+  S.alarms.forEach(function (a) {
+    if (a.on === false) return;
+    const when = nextOccurrence(a, now);
+    if (!when) return;
+    if (!best || when < best.when) best = { alarm: a, when: when };
+  });
+  return best;
+}
+function firedKey(a, when) {
+  return a.id + "@" + dayKey(when) + "-" + pad(when.getHours()) + "-" + pad(when.getMinutes());
+}
+/* For the engine: the moment this alarm was due today, or null. */
+function dueToday(a, now) {
+  if (a.on === false) return null;
+  if (!repeatsOn(a, now)) return null;
+  const when = new Date(now.getFullYear(), now.getMonth(), now.getDate(), a.h | 0, a.m | 0, 0, 0);
+  return when;
+}
+
+/* ------------------------------------------------------------------ 3 audio */
+let AC = null, soundSrc = null, soundId = null, toneTimer = null, ringerTimer = null;
+
+function ac() {
+  const C = window.AudioContext || window.webkitAudioContext;
+  if (!C) return null;
+  if (!AC) AC = new C();
+  if (AC.state === "suspended") { AC.resume().catch(function () { }); }
+  return AC;
+}
+function noiseBuffer(ctx, secs, brown) {
+  const len = Math.floor(ctx.sampleRate * secs);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  let last = 0;
+  for (let i = 0; i < len; i++) {
+    const w = Math.random() * 2 - 1;
+    if (brown) { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.2; }
+    else { d[i] = w; }
+  }
+  return buf;
+}
+/* One short alarm tone. name: chime | bell | ghost | pulse | rise */
+function playTone(name) {
+  const ctx = ac(); if (!ctx) return;
+  const t0 = ctx.currentTime;
+  const out = ctx.createGain();
+  out.gain.value = 0.0001;
+  out.connect(ctx.destination);
+  function blip(freq, start, dur, type, peak) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type || "sine";
+    o.frequency.setValueAtTime(freq, t0 + start);
+    g.gain.setValueAtTime(0.0001, t0 + start);
+    g.gain.exponentialRampToValueAtTime(peak || 0.4, t0 + start + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + dur);
+    o.connect(g); g.connect(out);
+    o.start(t0 + start); o.stop(t0 + start + dur + 0.05);
+    return o;
+  }
+  if (name === "bell") { blip(660, 0, 1.5, "triangle", 0.5); blip(990, 0.02, 1.2, "sine", 0.2); }
+  else if (name === "ghost") {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(760, t0);
+    o.frequency.exponentialRampToValueAtTime(280, t0 + 1.4);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.42, t0 + 0.06);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.5);
+    o.connect(g); g.connect(out); o.start(t0); o.stop(t0 + 1.6);
+  }
+  else if (name === "pulse") { [0, 0.22, 0.44].forEach(function (s) { blip(880, s, 0.16, "square", 0.3); }); }
+  else if (name === "rise") {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(320, t0);
+    o.frequency.linearRampToValueAtTime(940, t0 + 0.9);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.30, t0 + 0.08);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.0);
+    o.connect(g); g.connect(out); o.start(t0); o.stop(t0 + 1.1);
+  }
+  else { blip(880, 0, 0.7, "sine", 0.45); blip(1320, 0.14, 0.6, "sine", 0.28); }
+  const anyOsc = out;
+  setTimeout(function () { try { anyOsc.disconnect(); } catch (e) { } }, 2600);
+}
+function startToneLoop(name) {
+  stopToneLoop();
+  const one = function () { playTone(name); };
+  one();
+  toneTimer = setInterval(one, 2100);
+}
+function stopToneLoop() { if (toneTimer) { clearInterval(toneTimer); toneTimer = null; } }
+
+/* Generated sleep sounds (no audio files needed). */
+const SOUNDS = [
+  { id: "rain", name: "Rain", e: "🌧️" },
+  { id: "storm", name: "Storm", e: "⛈️" },
+  { id: "ocean", name: "Ocean", e: "🌊" },
+  { id: "wind", name: "Wind", e: "🍃" },
+  { id: "stream", name: "Stream", e: "💧" },
+  { id: "brown", name: "Deep noise", e: "🟤" },
+  { id: "white", name: "White noise", e: "⚪" },
+  { id: "hum", name: "Night hum", e: "🌙" }
+];
+function startSound(id) {
+  const ctx = ac(); if (!ctx) return;
+  stopSound();
+  const master = ctx.createGain();
+  master.gain.value = 0.0001;
+  master.connect(ctx.destination);
+  master.gain.exponentialRampToValueAtTime(0.5, ctx.currentTime + 1.2);
+  const nodes = [];
+  if (id === "rain" || id === "storm" || id === "white") {
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuffer(ctx, 3, false); src.loop = true;
+    const hp = ctx.createBiquadFilter(); hp.type = "highpass";
+    hp.frequency.value = id === "white" ? 800 : 1200;
+    src.connect(hp); hp.connect(master); src.start(); nodes.push(src);
+  }
+  if (id === "brown") {
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuffer(ctx, 3, true); src.loop = true;
+    src.connect(master); src.start(); nodes.push(src);
+  }
+  if (id === "ocean" || id === "wind" || id === "hum" || id === "stream") {
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuffer(ctx, 3, id !== "stream"); src.loop = true;
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = id === "stream" ? 2600 : (id === "wind" ? 700 : 400);
+    const mod = ctx.createGain(); mod.gain.value = 1;
+    const lfo = ctx.createOscillator(), lfoGain = ctx.createGain();
+    lfo.frequency.value = id === "hum" ? 0.08 : 0.14;
+    lfoGain.gain.value = id === "stream" ? 0.25 : 0.6;
+    lfo.connect(lfoGain); lfoGain.connect(mod.gain);
+    src.connect(lp); lp.connect(mod); mod.connect(master);
+    src.start(); lfo.start(); nodes.push(src, lfo);
+  }
+  if (id === "storm") {
+    const g = ctx.createGain(); g.gain.value = 0.0001;
+    g.connect(master); g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    const boom = ctx.createOscillator();
+    boom.type = "sine"; boom.frequency.value = 62;
+    boom.connect(g); boom.start();
+    const strike = setInterval(function () {
+      const t = ctx.currentTime;
+      g.gain.cancelScheduledValues(t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.5, t + 0.12);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+    }, 14000);
+    nodes.push(boom);
+    soundTimerExtra = strike;
+  }
+  soundSrc = { nodes: nodes, master: master };
+  soundId = id;
+  renderSounds();
+}
+let soundTimerExtra = null, sleepTimeout = null;
+function stopSound() {
+  if (soundTimerExtra) { clearInterval(soundTimerExtra); soundTimerExtra = null; }
+  if (soundSrc) {
+    try { soundSrc.master.gain.value = 0; } catch (e) { }
+    soundSrc.nodes.forEach(function (n) { try { n.stop(); } catch (e) { } });
+    soundSrc = null;
+  }
+  soundId = null;
+}
+const TIMERS = [15, 30, 45, 60];
+function setSleepTimer(min) {
+  if (sleepTimeout) { clearTimeout(sleepTimeout); sleepTimeout = null; }
+  S.timer = min; save(); renderSounds();
+  if (!min) { toast("Sleep timer off"); return; }
+  sleepTimeout = setTimeout(function () { stopSound(); S.timer = 0; save(); renderSounds(); toast("Ghost faded the sound out"); }, min * 60000);
+  toast("Ghost will fade it after " + min + " min");
+}
+
+/* ------------------------------------------------------ 4 voice + notify */
+function speak(text) {
+  if (!S.settings.voiceSpeak || !("speechSynthesis" in window) || !text) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(String(text));
+    u.rate = S.settings.style === "tough" ? 1.06 : 0.98;
+    u.pitch = 1.02;
+    window.speechSynthesis.speak(u);
+  } catch (e) { }
+}
+function stopSpeak() { try { window.speechSynthesis.cancel(); } catch (e) { } }
+
+function notify(title, body) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  try { new Notification(title, { body: body, tag: "ghostAlarm" }); } catch (e) { }
+}
+let toastTimer = null;
+function toast(msg) {
+  const el = document.getElementById("toast");
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add("on");
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { el.classList.remove("on"); }, 2400);
+}
+
+/* ------------------------------------------------------ 5 habits + sleep */
+function habitCount(h, key) { return (h.log && h.log[key]) ? h.log[key] : 0; }
+function streakOf(h) {
+  let n = 0;
+  const now = new Date();
+  for (let i = 0; i < 400; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const c = habitCount(h, dayKey(d));
+    if (c >= (h.goal || 1)) n++;
+    else if (i > 0) break;
+  }
+  return n;
+}
+function last7(h) {
+  const out = [], now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    out.push({ d: d, key: dayKey(d), hit: habitCount(h, dayKey(d)) >= (h.goal || 1) });
+  }
+  return out;
+}
+function weekRate(h) {
+  const w = last7(h), hit = w.filter(function (x) { return x.hit; }).length;
+  return Math.round(hit / 7 * 100);
+}
+function habitsDoneToday() {
+  return S.habits.filter(function (h) { return habitCount(h, todayKey()) >= (h.goal || 1); }).length;
+}
+function hoursBetween(bed, wake) {
+  const b = Number(String(bed).slice(0, 2)) * 60 + Number(String(bed).slice(3, 5));
+  const w = Number(String(wake).slice(0, 2)) * 60 + Number(String(wake).slice(3, 5));
+  let mins = w - b;
+  if (mins <= 0) mins += 1440;
+  return Math.round(mins / 6) / 10;
+}
+function sleepFor(key) { return S.sleep.filter(function (x) { return x.day === key; })[0] || null; }
+function lastSleep() {
+  const list = S.sleep.slice().sort(function (a, b) { return a.day < b.day ? 1 : -1; });
+  return list[0] || null;
+}
+
+/* --------------------------------------------------- 6 coach brain + AI */
+const PUSH = {
+  gentle: [
+    "Hey. The day is yours, take it slowly.",
+    "Small steps count. One is enough to start.",
+    "You showed up. That already matters.",
+    "Breathe. Then one honest step forward."
+  ],
+  balanced: [
+    "Rise and move. Progress beats perfect.",
+    "You said you wanted this. Prove it today.",
+    "No snooze. The plan is waiting.",
+    "Done today, proud tonight."
+  ],
+  tough: [
+    "Up. Excuses are not a plan.",
+    "Nobody is coming to do it for you. Go.",
+    "You wanted the result. Pay the price now.",
+    "Discipline is the shortcut. Move."
+  ]
+};
+const MORNING = [
+  "New day, clean slate. What is your one thing?",
+  "You are awake. Now win the first hour.",
+  "The alarm did its job. Your turn.",
+  "Morning. Your future self is watching this choice."
+];
+const CALM = [
+  "You missed once. That is not a streak of failure — restart now.",
+  "Bad night, not a bad life. Pick the smallest step.",
+  "Skip the guilt. Do the five-minute version.",
+  "Everyone falls. Ghosts get back up quietly."
+];
+const CHALLENGES = [
+  { t: "No snooze", b: "Get out of bed on the first alarm.", e: "⏰" },
+  { t: "5-minute start", b: "Do the thing you keep delaying for just five minutes.", e: "⚡" },
+  { t: "Water first", b: "Drink a full glass of water before anything else.", e: "💧" },
+  { t: "Move 10 minutes", b: "Walk, stretch or push ups. Ten minutes only.", e: "🏃" },
+  { t: "One thing finished", b: "Finish one task completely, not three partly.", e: "🎯" },
+  { t: "Outside light", b: "Get 5 minutes of daylight early.", e: "🌤️" },
+  { t: "Phone-free hour", b: "First hour of the day with no scrolling.", e: "📵" }
+];
+const QUICK = [
+  "Give me a morning challenge",
+  "I snoozed 4 times, help",
+  "Motivate me to train",
+  "Plan my day in 3 steps"
+];
+const KNOWLEDGE = [
+  { t: "What your ghost does", b: "Ghost Alarm wakes you with a voice and a line chosen for your coach style. Every morning it gives you one challenge. It also keeps your habits, streaks and sleep log in one place." },
+  { t: "Morning challenges", b: "Each day your ghost picks one challenge. Tap Done and the streak grows. Miss a day and the streak resets — but only your next check-in matters, not the guilt." },
+  { t: "How the voice works", b: "Alarms can speak a message using your phone's built-in voice (Web Speech). Turn it off in Settings or per alarm. Custom text on an alarm is always spoken exactly as you wrote it." },
+  { t: "Your own AI provider", b: "Settings → Your AI provider. Paste an OpenAI-compatible base URL (for example https://openrouter.ai/api/v1), your API key and a model id. Chat then goes straight to that provider from your browser; Ghost Alarm stores the key only on this device." },
+  { t: "Offline brain vs AI", b: "With no provider set, the ghost replies from its built-in brain: motivation, challenge ideas, habit and sleep feedback. Add a provider and it answers your real questions, with your stats included in the prompt." },
+  { t: "Habits and streaks", b: "Set a habit with a goal and unit. Tap the circle to log each rep. The ring fills as you approach the goal, and the seven dots show the past week." },
+  { t: "Sleep logging", b: "Log bedtime and wake time and Ghost Alarm computes hours and a rest score. The week chart shows your trend. A sleep timer fades generated sounds out after 15–60 minutes." },
+  { t: "Notifications", b: "Browser notifications are optional: Settings → Enable. The alarm rings inside the page as well, with a full-screen ringer, tone loop and voice." }
+];
+function challengeOfDay() {
+  const k = todayKey();
+  if (S.challenge.day !== k) {
+    S.challenge.day = k;
+    S.challenge.id = new Date().getDate() % CHALLENGES.length;
+    S.challenge.done = false;
+    save();
+  }
+  return CHALLENGES[S.challenge.id % CHALLENGES.length];
+}
+function coachLine() {
+  const list = PUSH[S.settings.style] || PUSH.balanced;
+  return list[new Date().getDate() % list.length];
+}
+function aiReady() {
+  const s = S.settings;
+  return !!(String(s.base).trim() && String(s.key).trim() && String(s.model).trim());
+}
+function systemPrompt() {
+  const best = S.habits.map(function (h) { return h.name + " (" + streakOf(h) + "d)"; }).join(", ") || "none yet";
+  const ls = lastSleep();
+  return "You are Ghost Coach inside the Ghost Alarm app. You are motivating, direct and practical. " +
+    "Never more than 90 words. Always end with one concrete action for today. " +
+    "Coach style: " + S.settings.style + ". " +
+    "User habits: " + best + ". Habits done today: " + habitsDoneToday() + " of " + S.habits.length + ". " +
+    (ls ? "Last night: " + ls.hours + "h of sleep. " : "") +
+    "Today's challenge: " + challengeOfDay().t + " - " + challengeOfDay().b + ".";
+}
+function offlineReply(text) {
+  const q = String(text || "").toLowerCase();
+  if (/snooze|overslept|late|missed/.test(q)) return CALM[new Date().getDate() % CALM.length] + "\nAction now: stand up and drink water.";
+  if (/challenge|task today|give me/.test(q)) { const c = challengeOfDay(); return "Today's challenge: " + c.t + " — " + c.b + "\nAction now: start it within five minutes."; }
+  if (/habit|streak/.test(q)) {
+    if (!S.habits.length) return "No habits yet. Add one small habit — two minutes, no more.\nAction now: tap Habits → New habit.";
+    const done = habitsDoneToday();
+    return "You have " + S.habits.length + " habits and " + done + " done today.\nAction now: log the easiest one right now.";
+  }
+  if (/sleep|tired|bed/.test(q)) {
+    const ls = lastSleep();
+    if (!ls) return "No sleep logged yet.\nAction now: log last night in Sleep → Log sleep.";
+    return "Last night: " + ls.hours + "h.\nAction now: set your bedtime alarm for " + (ls.hours < 7 ? "30 minutes earlier tonight." : "the same time tonight and keep it.");
+  }
+  if (/train|gym|workout|run/.test(q)) return "Training is easier when you shrink it.\nAction now: put on your shoes and do ten minutes.";
+  if (/plan|day|schedule/.test(q)) return "Three steps for today:\n1. One thing that must be finished.\n2. One habit logged.\n3. One thing you will say no to.\nAction now: write step 1 down.";
+  if (/motivat|push|tired of/.test(q)) return PUSH[S.settings.style][0] + "\nAction now: smallest version, five minutes.";
+  return coachLine() + "\nAction now: pick one thing and start it for five minutes.";
+}
+function askGhost(text) {
+  return new Promise(function (resolve) {
+    if (!aiReady()) { resolve(offlineReply(text)); return; }
+    let base = String(S.settings.base).trim().replace(/\/+$/, "");
+    if (!/\/chat\/completions$/.test(base)) base += "/chat/completions";
+    const ctrl = ("AbortController" in window) ? new AbortController() : null;
+    const to = setTimeout(function () { if (ctrl) ctrl.abort(); }, 20000);
+    const msgs = S.chat.slice(-6).map(function (m) {
+      return { role: m.me ? "user" : "assistant", content: m.text };
+    });
+    msgs.unshift({ role: "system", content: systemPrompt() });
+    msgs.push({ role: "user", content: text });
+    fetch(base, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + String(S.settings.key).trim() },
+      body: JSON.stringify({ model: String(S.settings.model).trim(), messages: msgs, max_tokens: 500 }),
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(function (r) {
+      if (!r.ok) throw new Error("Provider answered " + r.status);
+      return r.json();
+    }).then(function (j) {
+      const out = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+      clearTimeout(to);
+      resolve(out ? String(out).trim() : "The provider sent an empty reply. " + offlineReply(text));
+    }).catch(function (e) {
+      clearTimeout(to);
+      resolve("Could not reach your AI provider (" + (e && e.message ? e.message : "network error") + ").\n\n" + offlineReply(text));
+    });
+  });
+}
+function pushChat(me, text) {
+  S.chat.push({ me: me, text: text });
+  if (S.chat.length > 60) S.chat = S.chat.slice(-60);
+  save(); renderChat();
+}
+function sendChat(text) {
+  const t = String(text || "").trim();
+  if (!t) return;
+  pushChat(true, t);
+  pushChat(false, "…thinking");
+  askGhost(t).then(function (reply) {
+    S.chat.pop();
+    pushChat(false, reply);
+    speak(reply.split("\n")[0]);
+  });
+}
+
+/* ------------------------------------------------------------ 7 renderers */
+const ICONS = ["⏰", "🌅", "🏃", "💧", "📚", "🧘", "💪", "🌙", "☕", "🎯", "👻", "🚀"];
+const HABIT_ICONS = ["💧", "📚", "🏃", "🧘", "💪", "🥗", "🛏️", "🎯", "✍️", "🚭", "🧹", "🙏"];
+const TONES = ["chime", "bell", "ghost", "pulse", "rise"];
+const PRIOS = ["low", "normal", "high"];
+let hIcon = HABIT_ICONS[0];
+
+function el(id) { return document.getElementById(id); }
+function html(node, s) { if (node) node.innerHTML = s; }
+
+function renderHome() {
+  const now = new Date();
+  const h = now.getHours();
+  el("homeGreet").textContent = h < 12 ? "Good morning" : (h < 18 ? "Good afternoon" : "Good evening");
+  el("homeClock").textContent = fmtTime(now);
+  el("homeDate").textContent = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+  const nx = nextAlarm();
+  if (nx) {
+    el("homeNext").innerHTML = "<b>" + esc(fmt12(nx.alarm.h, nx.alarm.m)) + "</b> · " + esc(nx.alarm.label || "Alarm") +
+      (nx.alarm.repeat === "daily" ? " · every day" : " · " + esc(repeatText(nx.alarm)));
+    el("homeCountdown").textContent = "in " + msText(nx.when - now);
+    el("statNext").textContent = fmt12(nx.alarm.h, nx.alarm.m);
+  } else {
+    el("homeNext").textContent = "No alarm set";
+    el("homeCountdown").textContent = "—";
+    el("statNext").textContent = "—";
+  }
+  const c = challengeOfDay();
+  el("challengeTag").textContent = S.challenge.done ? "Done today 👻" : "Challenge";
+  el("challengeTag").className = "badge" + (S.challenge.done ? " good" : "");
+  el("challengeTitle").textContent = c.e + " " + c.t;
+  el("challengeBody").textContent = c.b;
+  el("challengeBtn").textContent = S.challenge.done ? "Undo" : "Done";
+  const best = S.habits.reduce(function (m, x) { return Math.max(m, streakOf(x)); }, 0);
+  el("challengeStreak").textContent = "Challenge streak: " + (S.challenge.streak || 0) + " day(s) · Best habit streak: " + best + "d";
+  el("coachLine").textContent = coachLine();
+  el("statHabits").textContent = habitsDoneToday() + "/" + S.habits.length;
+  el("statStreak").textContent = best + "d";
+  const ls = lastSleep();
+  el("statSleep").textContent = ls ? ls.hours + "h" : "—";
+  const strip = S.habits.slice(0, 4).map(function (x) {
+    const n = habitCount(x, todayKey()), done = n >= (x.goal || 1);
+    return '<div class="item"><div class="ico">' + x.e + '</div><div class="grow"><div style="font-weight:650;font-size:14px">' +
+      esc(x.name) + '</div><div class="small muted">' + n + "/" + (x.goal || 1) + " " + esc(x.unit || "") + " · " + streakOf(x) + 'd streak</div></div>' +
+      '<button class="btn ' + (done ? "soft" : "primary") + ' sm" data-check="' + x.id + '">' + (done ? "✓" : "+1") + '</button></div>';
+  }).join("");
+  html(el("homeHabits"), strip || '<div class="card empty"><span class="big">👻</span>No habits yet. Add one and your ghost will keep you honest.</div>');
+}
+
+function renderAlarms() {
+  const list = S.alarms.slice().sort(function (a, b) { return (a.h * 60 + a.m) - (b.h * 60 + b.m); });
+  html(el("alarmList"), list.length ? list.map(function (a) {
+    const nx = nextOccurrence(a, new Date());
+    return '<div class="item' + (a.on === false ? " off" : "") + '">' +
+      '<div class="ico">' + (a.e || "⏰") + '</div>' +
+      '<div class="grow"><div class="time">' + fmt12(a.h, a.m) + '</div>' +
+      '<div class="small muted"><span class="pri ' + (a.priority || "normal") + '"></span>' +
+      esc(repeatText(a)) + (a.label ? " · " + esc(a.label) : "") + "</div>" +
+      '<div class="tiny muted" style="margin-top:4px">' + (a.on === false ? "Off" :
+        (nx ? "Next in " + msText(nx - new Date()) : "No upcoming day")) +
+      " · " + esc(a.tone || "chime") + " · snooze " + (a.snooze || 5) + "m" + (a.voice === false ? "" : " · 🗣️") + "</div>" +
+      '<div class="actions"><button class="btn plain sm" data-edit="' + a.id + '">Edit</button>' +
+      '<button class="btn plain sm" data-test="' + a.id + '">Test ring</button>' +
+      '<button class="btn danger sm" data-del="' + a.id + '">Delete</button></div></div>' +
+      '<button class="switch' + (a.on === false ? "" : " on") + '" data-toggle="' + a.id + '" aria-label="Toggle alarm"></button>' +
+      '</div>';
+  }).join("") : '<div class="card empty"><span class="big">⏰</span>No alarms yet. Tap “New alarm” and your ghost will do the rest.</div>');
+}
+
+function renderHabits() {
+  el("habitDone").textContent = habitsDoneToday() + "/" + S.habits.length;
+  const avg = S.habits.length ? Math.round(S.habits.reduce(function (s, h) { return s + weekRate(h); }, 0) / S.habits.length) : 0;
+  el("habitRate").textContent = avg + "%";
+  html(el("habitList"), S.habits.length ? S.habits.map(function (h) {
+    const n = habitCount(h, todayKey()), goal = h.goal || 1, done = n >= goal;
+    const pct = Math.min(100, Math.round(n / goal * 100));
+    const dots = last7(h).map(function (d) {
+      return '<span class="dot' + (d.hit ? " hit" : "") + '">' + "SMTWTFS"[d.d.getDay()] + "</span>";
+    }).join("");
+    return '<div class="item"><div class="ico">' + h.e + '</div>' +
+      '<div class="grow"><div style="font-weight:700">' + esc(h.name) + '</div>' +
+      '<div class="small muted">' + n + "/" + goal + " " + esc(h.unit || "") + " · " + streakOf(h) + "d streak · " + weekRate(h) + "% this week</div>" +
+      '<div class="dots" style="margin-top:9px">' + dots + "</div>" +
+      (h.coach ? '<div class="tiny muted" style="margin-top:7px">“' + esc(h.coach) + '”</div>' : "") +
+      '<div class="actions"><button class="btn ' + (done ? "soft" : "primary") + ' sm" data-check="' + h.id + '">' + (done ? "✓ done" : "+1") + '</button>' +
+      '<button class="btn plain sm" data-edit-habit="' + h.id + '">Edit</button>' +
+      '<button class="btn danger sm" data-del-habit="' + h.id + '">Delete</button></div></div>' +
+      '<div class="ring" style="--p:' + pct + '"><span>' + (done ? "👻" : pct + "%") + "</span></div></div>";
+  }).join("") : '<div class="card empty"><span class="big">✅</span>No habits yet. Start with one you can do in two minutes.</div>');
+}
+
+function renderSleep() {
+  const ls = lastSleep();
+  el("sleepLast").textContent = ls ? ls.hours + "h" : "—";
+  el("sleepSub").textContent = ls ? (ls.day === todayKey() ? "Logged for tonight." : "Bed " + ls.bed + " → wake " + ls.wake + " · rest " + ls.quality + "/5") : "Log your hours to see the trend.";
+  const week = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const k = dayKey(d), l = sleepFor(k);
+    week.push({ k: k, h: l ? l.hours : 0, cap: "SMTWTFS"[d.getDay()] });
+  }
+  const max = Math.max(9, Math.max.apply(null, week.map(function (w) { return w.h; })));
+  html(el("sleepGrid"), week.map(function (w) {
+    const pct = Math.round((w.h || 0) / max * 100);
+    return '<div class="col" title="' + w.h + 'h"><span class="tiny muted">' + (w.h || "") + '</span>' +
+      '<div class="fill" style="height:' + Math.max(pct, 3) + '%"></div><span class="cap">' + w.cap + "</span></div>";
+  }).join(""));
+  const list = S.sleep.slice().sort(function (a, b) { return a.day < b.day ? 1 : -1; }).slice(0, 7);
+  html(el("sleepLog"), list.length ? list.map(function (x) {
+    return '<div class="log-row"><div><b>' + esc(x.day) + '</b><div class="tiny muted">' + x.bed + " → " + x.wake + "</div></div>" +
+      '<div style="text-align:right"><b>' + x.hours + 'h</b><div class="tiny muted">rest ' + x.quality + "/5</div></div></div>";
+  }).join("") : '<div class="empty">No nights logged yet.</div>');
+  renderSounds();
+}
+function renderSounds() {
+  html(el("soundGrid"), SOUNDS.map(function (s) {
+    return '<button class="sound-card' + (soundId === s.id ? " on" : "") + '" data-sound="' + s.id + '">' +
+      '<span class="e">' + s.e + '</span><span class="n">' + s.name + "</span>" +
+      '<span class="tiny muted">' + (soundId === s.id ? "Playing — tap to stop" : "Tap to play") + "</span></button>";
+  }).join(""));
+  html(el("timerRow"), '<span class="tiny muted" style="align-self:center">Timer</span>' +
+    '<button class="chip' + (!S.timer ? " on" : "") + '" data-timer="0">Off</button>' +
+    TIMERS.map(function (m) {
+      return '<button class="chip' + (S.timer === m ? " on" : "") + '" data-timer="' + m + '">' + m + " min</button>";
+    }).join(""));
+}
+
+function renderCoach() {
+  el("coachState").textContent = aiReady() ? "Connected · " + S.settings.model : "Offline brain ready";
+  const names = { gentle: "Gentle — kind, steady, no pressure.", balanced: "Balanced — push and support.", tough: "Tough love — no excuses." };
+  el("coachPersona").textContent = names[S.settings.style] || names.balanced;
+  el("voiceToggle").textContent = S.settings.voiceSpeak ? "🔊 Voice on" : "🔇 Voice off";
+  el("voiceToggle").className = "chip" + (S.settings.voiceSpeak ? " on" : "");
+  html(el("quickReplies"), QUICK.map(function (q) { return '<button class="quick-reply" data-quick="' + esc(q) + '">' + esc(q) + "</button>"; }).join(""));
+  renderChat();
+}
+function renderChat() {
+  const box = el("chatWrap");
+  if (!S.chat.length) S.chat.push({ me: false, text: coachLine() + "\n\nAsk me anything, or tap a quick reply below. 👻" });
+  html(box, S.chat.map(function (m) {
+    return '<div class="bubble ' + (m.me ? "me" : "ghost") + '">' + esc(m.text) + "</div>";
+  }).join(""));
+  box.scrollTop = box.scrollHeight;
+}
+function renderKnowledge() {
+  html(el("knowledgeList"), KNOWLEDGE.map(function (k) {
+    return '<div class="knowledge-item"><div class="knowledge-title">' + esc(k.t) + '</div><div class="knowledge-body">' + esc(k.b) + "</div></div>";
+  }).join(""));
+}
+function renderSettings() {
+  el("setBase").value = S.settings.base || "";
+  el("setKey").value = S.settings.key || "";
+  el("setModel").value = S.settings.model || "";
+  el("setStyle").value = S.settings.style || "balanced";
+  el("settingsState").textContent = aiReady()
+    ? "Connected to " + S.settings.model + " — the ghost uses your provider for chat."
+    : "Not connected — offline brain only.";
+  const perm = ("Notification" in window) ? Notification.permission : "unsupported";
+  el("notifState").textContent = perm === "granted" ? "Enabled" : (perm === "denied" ? "Blocked in the browser" : "Not enabled");
+  el("setVoiceSpeak").className = "switch" + (S.settings.voiceSpeak ? " on" : "");
+  el("setRing").className = "switch" + (S.settings.ringOn ? " on" : "");
+}
+function renderTabs() {
+  document.querySelectorAll("[data-nav]").forEach(function (b) {
+    b.classList.toggle("on", b.getAttribute("data-nav") === S.view);
+  });
+  document.querySelectorAll(".view").forEach(function (v) {
+    v.classList.toggle("on", v.id === "view-" + S.view);
+  });
+}
+function renderAll() {
+  challengeOfDay();
+  renderHome(); renderAlarms(); renderHabits(); renderSleep(); renderCoach(); renderSettings();
+  renderTabs();
+}
+
+/* ---------------------------------------------------- 8 sheets + ringer */
+const REPS = [
+  { v: "daily", n: "Every day" }, { v: "weekdays", n: "Weekdays" },
+  { v: "weekends", n: "Weekends" }, { v: "once", n: "Once" }
+];
+let draft = { id: null, e: "⏰", priority: "normal", repeat: "daily" };
+let editHabitId = null, editSleepDay = null;
+
+function openSheet(pane) {
+  ["paneAlarm", "paneHabit", "paneSleep", "paneSettings", "paneKnowledge"].forEach(function (p) {
+    const n = el(p); if (n) n.style.display = (p === pane ? "block" : "none");
+  });
+  el("sheetOverlay").classList.add("on");
+}
+function closeSheet() { el("sheetOverlay").classList.remove("on"); }
+
+function renderAlarmChips() {
+  html(el("iconChips"), ICONS.map(function (i) {
+    return '<button type="button" class="chip' + (draft.e === i ? " on" : "") + '" data-icon="' + i + '">' + i + "</button>";
+  }).join(""));
+  html(el("priorityChips"), PRIOS.map(function (p) {
+    return '<button type="button" class="chip' + (draft.priority === p ? " on" : "") + '" data-priority="' + p + '">' + p + "</button>";
+  }).join(""));
+  html(el("repeatChips"), REPS.map(function (r) {
+    return '<button type="button" class="chip' + (draft.repeat === r.v ? " on" : "") + '" data-repeat="' + r.v + '">' + r.n + "</button>";
+  }).join(""));
+  el("dateField").style.display = draft.repeat === "once" ? "block" : "none";
+}
+function setSwitch(node, on) {
+  if (!node) return;
+  node.classList.toggle("on", !!on);
+  node.setAttribute("data-on", on ? "1" : "0");
+}
+function switchOn(node) { return node && node.getAttribute("data-on") === "1"; }
+
+function openAlarmSheet(id) {
+  const a = S.alarms.filter(function (x) { return x.id === id; })[0] || null;
+  const now = new Date();
+  draft = {
+    id: a ? a.id : null,
+    e: a ? (a.e || "⏰") : "⏰",
+    priority: a ? (a.priority || "normal") : "normal",
+    repeat: a ? (a.repeat || "daily") : "daily"
+  };
+  el("alarmSheetTitle").textContent = a ? "Edit alarm" : "New alarm";
+  el("aHour").value = a ? a.h : now.getHours();
+  el("aMin").value = a ? a.m : (now.getMinutes() < 30 ? 30 : 0);
+  el("aLabel").value = a ? (a.label || "") : "";
+  el("aDate").value = a ? (a.date || todayKey()) : todayKey();
+  el("aMsg").value = a ? (a.msg || "") : "";
+  el("aSnooze").value = a ? (a.snooze || 5) : 5;
+  html(el("aTone"), TONES.map(function (t) {
+    return '<option value="' + t + '">' + t + "</option>";
+  }).join(""));
+  el("aTone").value = a ? (a.tone || "chime") : "chime";
+  setSwitch(el("aVoice"), a ? a.voice !== false : true);
+  el("aDelete").style.display = a ? "inline-flex" : "none";
+  renderAlarmChips();
+  openSheet("paneAlarm");
+}
+function openHabitSheet(id) {
+  const h = S.habits.filter(function (x) { return x.id === id; })[0] || null;
+  editHabitId = h ? h.id : null;
+  hIcon = h ? h.e : HABIT_ICONS[0];
+  el("habitSheetTitle").textContent = h ? "Edit habit" : "New habit";
+  el("hName").value = h ? h.name : "";
+  el("hGoal").value = h ? (h.goal || 1) : 1;
+  el("hUnit").value = h ? (h.unit || "") : "time";
+  el("hCoach").value = h ? (h.coach || "") : "";
+  el("hDelete").style.display = h ? "inline-flex" : "none";
+  html(el("habitIconChips"), HABIT_ICONS.map(function (i) {
+    return '<button type="button" class="chip' + (hIcon === i ? " on" : "") + '" data-hicon="' + i + '">' + i + "</button>";
+  }).join(""));
+  openSheet("paneHabit");
+}
+function openSleepSheet() {
+  const ls = sleepFor(todayKey());
+  editSleepDay = ls ? ls.day : null;
+  el("sBed").value = ls ? ls.bed : "23:00";
+  el("sWake").value = ls ? ls.wake : "07:00";
+  el("sQuality").value = ls ? ls.quality : 3;
+  el("sQualityLabel").textContent = el("sQuality").value + "/5";
+  el("sleepDelete").style.display = ls ? "inline-flex" : "none";
+  openSheet("paneSleep");
+}
+
+function alarmMessage(a) {
+  if (a && a.msg) return a.msg;
+  const c = challengeOfDay();
+  return coachLine() + "\n\nToday's challenge: " + c.t + " — " + c.b;
+}
+function openRinger(a) {
+  el("ringerTime").textContent = fmt12(a.h, a.m);
+  el("ringerLabel").textContent = (a.e || "⏰") + " " + (a.label || "Alarm") + " · " + repeatText(a);
+  el("ringerMsg").textContent = alarmMessage(a);
+  const mins = a.snooze || 5;
+  el("ringerSnooze").textContent = "Snooze " + mins + " min";
+  RING.openedAt = Date.now();
+  el("ringer").classList.add("on");
+  if (S.settings.ringOn) startToneLoop(a.tone || "chime");
+  if (a.voice !== false) speak(alarmMessage(a));
+  notify("👻 " + fmt12(a.h, a.m), alarmMessage(a).split("\n")[0]);
+}
+function closeRinger() {
+  el("ringer").classList.remove("on");
+  stopToneLoop(); stopSpeak();
+  RING.alarmId = null; RING.when = null; RING.snoozeUntil = 0;
+}
+
+/* --------------------------------------------------- alarm engine + tick */
+let ENGINE = null;
+let RING = { alarmId: null, when: null, snoozeUntil: 0, openedAt: 0 };
+
+function ringAlarm(a, when) {
+  RING.alarmId = a.id; RING.when = when; RING.snoozeUntil = 0;
+  openRinger(a);
+}
+function snoozeActive() {
+  const a = S.alarms.filter(function (x) { return x.id === RING.alarmId; })[0];
+  const mins = (a && a.snooze) || 5;
+  RING.snoozeUntil = Date.now() + mins * 60000;
+  el("ringer").classList.remove("on");
+  stopToneLoop(); stopSpeak();
+  toast("Ghost will wake you again in " + mins + " min");
+}
+function tick() {
+  const now = new Date();
+  if (RING.alarmId) {
+    if (RING.snoozeUntil && Date.now() >= RING.snoozeUntil) {
+      const a = S.alarms.filter(function (x) { return x.id === RING.alarmId; })[0];
+      if (a) { RING.snoozeUntil = 0; openRinger(a); }
+      else { closeRinger(); }
+      return;
+    }
+    /* If the ringer is closed with no snooze pending (tab was hidden, or the
+       user dismissed it) release the engine so other alarms can still fire. */
+    if (!RING.snoozeUntil && RING.openedAt && Date.now() - RING.openedAt > 120000) {
+      RING.alarmId = null; RING.when = null; RING.openedAt = 0;
+    } else {
+      return;
+    }
+  }
+  for (let i = 0; i < S.alarms.length; i++) {
+    const a = S.alarms[i];
+    const when = dueToday(a, now);
+    if (!when) continue;
+    const late = now.getTime() - when.getTime();
+    if (late < 0 || late > 90000) continue;
+    const k = firedKey(a, when);
+    if (S.fired[k]) continue;
+    S.fired[k] = 1;
+    const keys = Object.keys(S.fired);
+    if (keys.length > 200) { S.fired = {}; S.fired[k] = 1; }
+    save();
+    ringAlarm(a, when);
+    break;
+  }
+}
+function startEngine() {
+  if (ENGINE) clearInterval(ENGINE);
+  tick();
+  ENGINE = setInterval(tick, 1500);
+}
+
+/* ------------------------------------------------------------- 9 wiring */
+const REPS_UI = { daily: "Every day", weekdays: "Weekdays", weekends: "Weekends", once: "Once" };
+
+document.addEventListener("click", function (ev) {
+  const t = ev.target;
+  const hit = function (sel) { return t.closest(sel); };
+  let n;
+
+  if ((n = hit("[data-nav]"))) {
+    S.view = n.getAttribute("data-nav"); save(); renderTabs();
+    if (S.view === "coach") renderCoach();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+  if ((n = hit("[data-go]"))) {
+    S.view = n.getAttribute("data-go"); save(); renderTabs();
+    if (S.view === "coach") renderCoach();
+    return;
+  }
+  if ((n = hit("[data-open]"))) {
+    const what = n.getAttribute("data-open");
+    if (what === "alarm") openAlarmSheet(null);
+    if (what === "habit") openHabitSheet(null);
+    if (what === "sleep") openSleepSheet();
+    if (what === "settings") { renderSettings(); openSheet("paneSettings"); }
+    if (what === "knowledge") { renderKnowledge(); openSheet("paneKnowledge"); }
+    return;
+  }
+  if (hit("[data-close]")) { closeSheet(); return; }
+  if (t === el("sheetOverlay")) { closeSheet(); return; }
+
+  if ((n = hit("[data-challenge]"))) {
+    S.challenge.done = !S.challenge.done;
+    if (S.challenge.done) {
+      S.challenge.streak = (S.challenge.streak || 0) + 1;
+      toast("Challenge done 👻 streak " + S.challenge.streak);
+    } else {
+      S.challenge.streak = Math.max(0, (S.challenge.streak || 0) - 1);
+    }
+    save(); renderHome();
+    return;
+  }
+  if ((n = hit("[data-check]"))) {
+    const h = S.habits.filter(function (x) { return x.id === n.getAttribute("data-check"); })[0];
+    if (!h) return;
+    const k = todayKey();
+    h.log = h.log || {};
+    const cur = h.log[k] || 0;
+    h.log[k] = cur + 1;
+    save(); renderHome(); renderHabits();
+    const goal = h.goal || 1;
+    if (h.log[k] === goal) {
+      toast("👻 " + (h.coach || "Goal hit. " + streakOf(h) + " day streak."));
+      speak(h.coach || "Goal hit. That is " + streakOf(h) + " days in a row.");
+    } else if (h.log[k] > goal) {
+      h.log[k] = goal; save();
+    }
+    return;
+  }
+  if ((n = hit("[data-icon]"))) { draft.e = n.getAttribute("data-icon"); renderAlarmChips(); return; }
+  if ((n = hit("[data-priority]"))) { draft.priority = n.getAttribute("data-priority"); renderAlarmChips(); return; }
+  if ((n = hit("[data-repeat]"))) { draft.repeat = n.getAttribute("data-repeat"); renderAlarmChips(); return; }
+  if ((n = hit("[data-hicon]"))) { hIcon = n.getAttribute("data-hicon"); openHabitSheetKeep(); return; }
+  if ((n = hit("[data-edit]"))) { openAlarmSheet(n.getAttribute("data-edit")); return; }
+  if ((n = hit("[data-edit-habit]"))) { openHabitSheet(n.getAttribute("data-edit-habit")); return; }
+  if ((n = hit("[data-del]"))) {
+    const id = n.getAttribute("data-del");
+    S.alarms = S.alarms.filter(function (x) { return x.id !== id; });
+    save(); renderAlarms(); renderHome(); toast("Alarm deleted");
+    return;
+  }
+  if ((n = hit("[data-del-habit]"))) {
+    const id = n.getAttribute("data-del-habit");
+    S.habits = S.habits.filter(function (x) { return x.id !== id; });
+    save(); renderHabits(); renderHome(); closeSheet(); toast("Habit deleted");
+    return;
+  }
+  if ((n = hit("[data-toggle]"))) {
+    const a = S.alarms.filter(function (x) { return x.id === n.getAttribute("data-toggle"); })[0];
+    if (!a) return;
+    a.on = a.on === false;
+    save(); renderAlarms(); renderHome();
+    toast(a.on ? "Alarm on" : "Alarm off");
+    return;
+  }
+  if ((n = hit("[data-test]"))) {
+    const a = S.alarms.filter(function (x) { return x.id === n.getAttribute("data-test"); })[0];
+    if (a) openRinger(a);
+    return;
+  }
+  if ((n = hit("[data-sound]"))) {
+    const id = n.getAttribute("data-sound");
+    if (soundId === id) { stopSound(); renderSounds(); toast("Sound stopped"); }
+    else { startSound(id); toast("Playing " + id); }
+    return;
+  }
+  if ((n = hit("[data-timer]"))) { setSleepTimer(Number(n.getAttribute("data-timer"))); return; }
+  if ((n = hit("[data-quick]"))) {
+    sendChat(n.getAttribute("data-quick"));
+    return;
+  }
+  if (t === el("chatSend")) { const i = el("chatInput"); sendChat(i.value); i.value = ""; return; }
+  if (t === el("voiceToggle")) {
+    S.settings.voiceSpeak = !S.settings.voiceSpeak;
+    if (!S.settings.voiceSpeak) stopSpeak();
+    save(); renderCoach(); renderSettings();
+    toast(S.settings.voiceSpeak ? "Voice on" : "Voice off");
+    return;
+  }
+  if (t === el("speakLine")) { speak(coachLine()); toast("👻 Speaking"); return; }
+  if (t === el("btnSettings")) { renderSettings(); openSheet("paneSettings"); return; }
+
+  if (t === el("setVoiceSpeak")) {
+    S.settings.voiceSpeak = !S.settings.voiceSpeak; save(); renderSettings(); return;
+  }
+  if (t === el("setRing")) { S.settings.ringOn = !S.settings.ringOn; save(); renderSettings(); return; }
+  if (t === el("aVoice")) { setSwitch(t, !switchOn(t)); return; }
+  if (t === el("testVoice")) { speak(coachLine() + " " + challengeOfDay().b); toast("👻 Speaking"); return; }
+  if (t === el("testRing")) {
+    const a = { h: new Date().getHours(), m: new Date().getMinutes(), e: "👻", label: "Test", tone: el("aTone") ? el("aTone").value : "chime", snooze: 5, msg: "" };
+    openRinger(a); return;
+  }
+  if (t === el("ringerDone")) {
+    const a = S.alarms.filter(function (x) { return x.id === RING.alarmId; })[0];
+    toast(a && a.label ? "👻 Good morning — " + a.label : "👻 Good morning");
+    closeRinger();
+    return;
+  }
+  if (t === el("ringerSnooze")) { snoozeActive(); return; }
+  if (t === el("askNotif")) {
+    if (!("Notification" in window)) { toast("This browser has no notifications"); return; }
+    Notification.requestPermission().then(function () { renderSettings(); });
+    return;
+  }
+  if (t === el("testAI")) { testProvider(); return; }
+  if (t === el("aDelete")) {
+    if (!draft.id) return;
+    S.alarms = S.alarms.filter(function (x) { return x.id !== draft.id; });
+    save(); renderAlarms(); renderHome(); closeSheet(); toast("Alarm deleted");
+    return;
+  }
+  if (t === el("hDelete")) {
+    if (!editHabitId) return;
+    S.habits = S.habits.filter(function (x) { return x.id !== editHabitId; });
+    save(); renderHabits(); renderHome(); closeSheet(); toast("Habit deleted");
+    return;
+  }
+  if (t === el("sleepDelete")) {
+    S.sleep = S.sleep.filter(function (x) { return x.day !== editSleepDay; });
+    save(); renderSleep(); renderHome(); closeSheet(); toast("Night removed");
+    return;
+  }
+  if (t === el("resetAll")) {
+    S = defaults(); save();
+    setTimeout(function () { location.reload(); }, 120);
+    return;
+  }
+});
+function openHabitSheetKeep() {
+  html(el("habitIconChips"), HABIT_ICONS.map(function (i) {
+    return '<button type="button" class="chip' + (hIcon === i ? " on" : "") + '" data-hicon="' + i + '">' + i + "</button>";
+  }).join(""));
+}
+function testProvider() {
+  S.settings.base = el("setBase").value.trim();
+  S.settings.key = el("setKey").value.trim();
+  S.settings.model = el("setModel").value.trim();
+  S.settings.style = el("setStyle").value;
+  save();
+  if (!aiReady()) { el("settingsState").textContent = "Fill all three fields: base URL, API key and model id."; return; }
+  el("settingsState").textContent = "Testing…";
+  askGhost("Reply with exactly: connected").then(function (r) {
+    el("settingsState").textContent = "Ghost says: " + r.slice(0, 120);
+    renderCoach(); toast("Provider tested");
+  });
+}
+
+document.addEventListener("input", function (ev) {
+  if (ev.target === el("sQuality")) el("sQualityLabel").textContent = el("sQuality").value + "/5";
+});
+document.addEventListener("keydown", function (ev) {
+  if (ev.key === "Escape") closeSheet();
+  if (ev.key === "Enter" && ev.target === el("chatInput")) {
+    ev.preventDefault();
+    sendChat(ev.target.value);
+    ev.target.value = "";
+  }
+});
+
+/* forms */
+el("alarmForm").addEventListener("submit", function (ev) {
+  ev.preventDefault();
+  const h = Math.max(0, Math.min(23, Number(el("aHour").value) || 0));
+  const m = Math.max(0, Math.min(59, Number(el("aMin").value) || 0));
+  const data = {
+    h: h, m: m,
+    label: el("aLabel").value.trim(),
+    e: draft.e, priority: draft.priority, repeat: draft.repeat,
+    date: draft.repeat === "once" ? (el("aDate").value || todayKey()) : "",
+    tone: el("aTone").value,
+    snooze: Math.max(1, Math.min(60, Number(el("aSnooze").value) || 5)),
+    msg: el("aMsg").value.trim(),
+    voice: switchOn(el("aVoice"))
+  };
+  if (draft.id) {
+    S.alarms = S.alarms.map(function (a) { return a.id === draft.id ? Object.assign(a, data) : a; });
+  } else {
+    S.alarms.push(Object.assign({ id: uid(), on: true }, data));
+  }
+  save(); closeSheet(); renderAlarms(); renderHome();
+  toast(draft.id ? "Alarm updated" : "Alarm saved · " + fmt12(h, m));
+});
+el("habitForm").addEventListener("submit", function (ev) {
+  ev.preventDefault();
+  const name = el("hName").value.trim();
+  if (!name) { toast("Give the habit a name"); return; }
+  const data = {
+    name: name, e: hIcon,
+    goal: Math.max(1, Math.min(20, Number(el("hGoal").value) || 1)),
+    unit: el("hUnit").value.trim() || "time",
+    coach: el("hCoach").value.trim()
+  };
+  if (editHabitId) {
+    S.habits = S.habits.map(function (x) { return x.id === editHabitId ? Object.assign(x, data) : x; });
+  } else {
+    S.habits.push(Object.assign({ id: uid(), log: {} }, data));
+  }
+  save(); closeSheet(); renderHabits(); renderHome();
+  toast(editHabitId ? "Habit updated" : "Habit added 👻");
+});
+el("sleepForm").addEventListener("submit", function (ev) {
+  ev.preventDefault();
+  const bed = el("sBed").value || "23:00", wake = el("sWake").value || "07:00";
+  const day = todayKey();
+  const rec = { day: day, bed: bed, wake: wake, hours: hoursBetween(bed, wake), quality: Number(el("sQuality").value) || 3 };
+  S.sleep = S.sleep.filter(function (x) { return x.day !== day; });
+  S.sleep.push(rec);
+  if (S.sleep.length > 90) S.sleep = S.sleep.slice(-90);
+  save(); closeSheet(); renderSleep(); renderHome();
+  toast("Logged " + rec.hours + "h · rest " + rec.quality + "/5");
+});
+
+/* settings live save */
+["setBase", "setKey", "setModel"].forEach(function (id) {
+  el(id).addEventListener("change", function () {
+    S.settings.base = el("setBase").value.trim();
+    S.settings.key = el("setKey").value.trim();
+    S.settings.model = el("setModel").value.trim();
+    save(); renderSettings(); renderCoach();
+    toast(aiReady() ? "AI provider saved" : "Add base URL, key and model");
+  });
+});
+el("setStyle").addEventListener("change", function () {
+  S.settings.style = el("setStyle").value; save(); renderCoach(); renderHome();
+  toast("Coach style: " + S.settings.style);
+  speak(coachLine());
+});
+
+/* ------------------------------------------------------------------ boot */
+function clockLoop() {
+  renderHome();
+  setTimeout(clockLoop, 20000);
+}
+function boot() {
+  if (!S.chat.length) S.chat.push({ me: false, text: coachLine() + "\n\nAsk me anything, or tap a quick reply below. 👻" });
+  renderKnowledge();
+  renderAll();
+  renderSettings();
+  startEngine();
+  clockLoop();
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) tick(); });
+  window.addEventListener("focus", function () { tick(); renderHome(); });
+  toast("👻 Ghost Alarm ready");
+}
+boot();
+</script>
 </body>
 </html>
