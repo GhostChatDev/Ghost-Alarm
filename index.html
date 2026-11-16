@@ -232,7 +232,22 @@ body{background-image:radial-gradient(ellipse at 50% 0,#352653 0,transparent 48%
 .tonight-card{margin-top:18px!important}
 .tile-note{margin-top:6px;font-size:12.5px;color:var(--ink-soft)}
 #ringer{background:radial-gradient(ellipse at top,#342549,#181B1E 60%)}#ringerTime{font-size:clamp(70px,22vw,110px);font-weight:500}#ringer .ghost{font-size:86px;filter:drop-shadow(0 0 22px #B49AF7)}#ringer .row{flex-direction:column;width:min(350px,100%)}#ringer .btn{width:100%;border-radius:40px;padding:18px}#ringerDone{order:-1;background:#B49AF7!important;color:#19151F!important}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+/* Reference UI — rounded lilac ghost, quiet surfaces, generous spacing */
+:root{--violet:#B99AF7;--violet-dark:#9470D5;--violet-pale:#342A45;--cream:#121116;--ink:#F8F5FF;--ink-soft:#AAA3B6;--line:#332D3D;--r:26px}
+body{background:radial-gradient(ellipse 100% 32% at 50% 0,#271C36 0,transparent 100%),#121116;font-size:15px;padding-bottom:100px}
+.wrap{max-width:500px;padding-left:22px;padding-right:22px}.appbar{background:#121116CC;border-bottom:0;backdrop-filter:blur(18px)}.appbar .wrap{padding-top:18px;padding-bottom:10px;gap:10px}.brand{font-size:18px;font-weight:750}.brand small{font-size:11px;margin-top:2px;font-weight:450}.logo{width:34px;height:38px;background:none;box-shadow:none}.icon-btn{background:#24212B;border-color:#37313F;box-shadow:none;color:#D9CBEE;border-radius:50%}
+.hero{background:linear-gradient(145deg,#292234,#1A1820 65%);border:1px solid #6D4D92;border-radius:30px;padding:28px 24px 24px;text-align:center;box-shadow:0 18px 50px #0005,0 0 35px #9A69DC13;overflow:visible}.hero .lbl{font-size:12px;letter-spacing:2px}.hero-time{font-size:clamp(64px,19vw,86px);font-weight:500;letter-spacing:-4px;line-height:1.15;margin:16px 0 4px}.hero-sub{font-size:13px}.hero-next{margin:22px 0 0;padding:13px 16px;background:#B99AF70D;border:1px solid #A47CDE20;border-radius:17px;justify-content:center}.hero-next b{color:#D8C1FF}.hero-ghost{height:128px;display:grid;place-items:center;margin:-5px 0 10px}.ghost-art{width:104px;height:116px;display:block;overflow:visible;filter:drop-shadow(0 0 18px #BC91FF35)}.logo .ghost-art{width:32px;height:36px}.hero-ghost .ghost-art{width:116px;height:130px}.ghost-float{animation:ghostFloat 4s ease-in-out infinite;will-change:transform}@keyframes ghostFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.home-actions{margin:16px 0 4px}.home-actions .btn{min-height:48px}.home-actions .btn.primary{border-radius:18px;background:linear-gradient(135deg,#C4A7FC,#9471D2);color:#19121F;box-shadow:0 8px 24px #9974D32B}.home-actions .btn.plain{flex:0 0 92px;background:#211E27;border-color:#393140}
+.sec-title{font-size:12px;letter-spacing:1.4px;margin:27px 2px 12px;color:#AAA0B9}.card{border-radius:24px;background:#211F27;box-shadow:none;border-color:#35303E}.weather-card{background:linear-gradient(125deg,#5D3693,#7254B8)!important;border-radius:26px!important;padding:22px!important;margin-top:18px!important}.weather-card>.small{font-size:11px;letter-spacing:1.4px;font-weight:700}.weather-temp{font-size:50px;font-weight:500;margin:5px 0}.weather-card .hint{font-size:10px;line-height:1.5}.weather-card .btn{background:#FFFFFF12;border-color:#FFFFFF20;color:#fff}
+.coach-preview{border:1px solid #57406E!important;background:linear-gradient(145deg,#292235,#211E29)!important;border-radius:25px!important;margin-top:54px!important;padding:32px 20px 18px!important;text-align:center}.coach-preview:before{display:none}.preview-ghost{height:56px;margin-top:-78px;margin-bottom:14px;display:grid;place-items:center}.preview-ghost .ghost-art{width:67px;height:75px}.coach-preview>.row:first-of-type{justify-content:center}.coach-preview .ico{display:none}.coach-preview .grow{flex:0 1 auto}.coach-preview .small{margin-top:5px;line-height:1.5}.coach-preview>.row:last-child{justify-content:center}.coach-preview .btn{border-radius:14px}.coach-preview .btn.soft{background:#B99AF7;color:#201526}.coach-preview .btn.plain{background:transparent;border:0;color:#CAB4E6}
+.tonight-card{border-radius:24px!important;padding:20px!important}.tonight-card .btn.soft{background:#342A45}.feature-grid{gap:12px}.feature-grid button{background:#211F27;border-radius:24px;padding:22px 18px;border-color:#35303E;min-height:142px;transition:transform .2s,background .2s}.feature-grid button:active{transform:scale(.97)}.feature-grid span{font-size:28px}.feature-grid button[data-go="alarms"] span{color:#C6ABF8}.feature-grid button[data-go="habits"] span{color:#A8D8B4}.feature-grid button[data-go="sleep"] span{color:#B7B2FA}#moreWeather span{color:#E7C58F}.tile-note{line-height:1.45}.feature-intro{line-height:1.6}
+.coach-hero{border-radius:28px;background:linear-gradient(135deg,#392A4B,#25212E);border:1px solid #534063;padding:24px 20px}.coach-hero .who{gap:14px}.coach-hero .av{background:transparent;width:58px;height:62px}.coach-hero .av .ghost-art{width:58px;height:64px}.coach-hero .chip{border-radius:999px;font-size:11px}.coach-hero #coachPersona{line-height:1.55}.chat{height:320px;padding:3px 2px 12px}.bubble{max-width:88%;padding:14px 16px;line-height:1.55;border-radius:20px}.bubble.ghost{background:#302839;border:1px solid #493B57;border-bottom-left-radius:7px}.bubble.me{background:linear-gradient(135deg,#BAA0EC,#9476C9);color:#1E1527;border-bottom-right-radius:7px}.quick-reply{background:#27222F;padding:9px 14px}.composer{gap:9px}.composer input{height:47px;border-radius:16px;background:#1C1922!important;border:1px solid #3A3245}.composer .btn{height:47px;border-radius:16px;padding:12px 19px}.chat .bubble{animation:messageIn .25s ease-out both}@keyframes messageIn{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+.sheet{border-radius:30px 30px 0 0;background:#1E1B24;border:1px solid #44374F;padding:12px 22px 24px;max-height:94vh}.sheet-head h3{font-size:22px}.sheet-head{margin-bottom:16px}.sheet-subtitle{color:var(--ink-soft);font-size:13px;margin:-8px 0 20px;line-height:1.5}.alarm-time-inputs{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:#27222F;border:1px solid #4B3B5E;border-radius:25px;padding:16px;margin-bottom:15px}.alarm-time-inputs .field{margin:0}.alarm-time-inputs label{text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:1px}.alarm-time-inputs input{font-size:48px!important;font-weight:500;text-align:center;letter-spacing:-2px;background:transparent!important;border:0!important;padding:0!important;height:66px;width:100%;appearance:textfield;-moz-appearance:textfield}.alarm-time-inputs input::-webkit-inner-spin-button{display:none}.time-separator{font-size:38px;color:#88739F;margin-top:20px}.daypart{display:flex;justify-content:center;gap:8px;margin:-2px 0 18px}.daypart .chip{min-width:76px;text-align:center}.alarm-detail{background:#24212B;border:1px solid #393140;border-radius:16px;padding:12px 14px}.grid-chips .chip{border-radius:12px}.sheet .btn.primary[type="submit"]{min-height:50px;border-radius:16px;background:linear-gradient(135deg,#C4A7FC,#9471D2)}
+#ringer{background:radial-gradient(ellipse 80% 50% at 50% 34%,#3A2553 0,#17131D 70%);padding:32px 24px}#ringer .ghost{height:150px;display:grid;place-items:center}#ringer .ghost .ghost-art{width:132px;height:147px}#ringerTime{font-size:clamp(72px,22vw,104px);letter-spacing:-5px;font-weight:450;margin-top:12px}#ringerLabel{font-size:16px;color:#C3B5D4}#ringerMsg{max-width:340px;line-height:1.65;font-size:15px;color:#B7ACCA;margin:18px 0 28px}#ringer .row{gap:12px}#ringerDone{min-height:58px;font-size:17px;box-shadow:0 8px 28px #AC80EF2B!important}#ringerSnooze{min-height:50px;background:#FFFFFF08!important;border-color:#5D496D!important;color:#D8C6E9!important}
+.tabbar{background:#1B1920F2;border-top:1px solid #342C3C;backdrop-filter:blur(18px)}.tabbar .inner{max-width:500px}.ghost-nav{padding:13px 2px 12px;font-size:10px;position:relative;transition:color .2s}.ghost-nav span{font-size:21px;filter:grayscale(1);opacity:.7;transition:transform .2s,opacity .2s,filter .2s}.ghost-nav.on{color:#D4B9FF}.ghost-nav.on span{filter:none;opacity:1;transform:translateY(-2px)}.ghost-nav.on:after{content:"";position:absolute;bottom:4px;left:calc(50% - 3px);width:6px;height:6px;background:#C4A4FA;border-radius:50%}
+.item{background:#211F27;box-shadow:none;border-radius:22px}.item .ico{background:#30283B}.btn,.chip,.quick-reply{transition:transform .18s,background .18s,border-color .18s}.sound-card,.knowledge-item{box-shadow:none}.view.on{animation:viewIn .28s cubic-bezier(.2,.75,.25,1) both}
+@media(min-width:700px){body{padding-top:10px}.wrap{max-width:540px}.tabbar .inner{max-width:540px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.ghost-float{will-change:auto}}
 </style>
 </head>
 <body>
@@ -1778,6 +1793,8 @@ boot();
 <script>
 // Keep the existing tools and their handlers; only reorganize their entry points.
 (() => {
+  const ghostArt = (extraClass = '') => '<svg class="ghost-art ' + extraClass + '" viewBox="0 0 104 112" fill="none" aria-hidden="true"><defs><linearGradient id="ghostBody" x1="26" y1="12" x2="78" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#E1C9FF"/><stop offset=".52" stop-color="#BE96F2"/><stop offset="1" stop-color="#8F61CC"/></linearGradient><linearGradient id="ghostShine" x1="36" y1="18" x2="63" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path d="M18 54C18 27 32 10 52 10s34 17 34 44v35c0 8-8 10-13 3-4-6-9-5-12 2-3 8-11 8-15 0-3-7-8-8-12-2-5 7-16 5-16-3V54Z" fill="url(#ghostBody)"/><path d="M26 49c0-19 10-30 25-32-9 8-13 20-13 36v25c-5 7-12 7-12 1V49Z" fill="url(#ghostShine)"/><ellipse cx="40" cy="51" rx="5" ry="7" fill="#30203F"/><ellipse cx="65" cy="51" rx="5" ry="7" fill="#30203F"/><circle cx="41.5" cy="48.5" r="1.6" fill="white"/><circle cx="66.5" cy="48.5" r="1.6" fill="white"/><path d="M47 65c3 3 7 3 10 0" stroke="#523068" stroke-width="2.6" stroke-linecap="round"/><ellipse cx="31" cy="62" rx="6" ry="3" fill="#E59BD3" opacity=".48"/><ellipse cx="74" cy="62" rx="6" ry="3" fill="#E59BD3" opacity=".48"/><path d="M20 62c-7 0-10 4-12 8M84 62c7 0 10 4 12 8" stroke="#B88CEB" stroke-width="7" stroke-linecap="round"/></svg>';
+  document.querySelector('.logo').innerHTML = ghostArt();
   document.querySelector('.brand').innerHTML = 'Ghost Coach<small>A better morning starts tonight.</small>';
   const home = document.getElementById('view-home');
   const more = document.createElement('section');
@@ -1838,6 +1855,40 @@ boot();
     document.querySelector('.tabbar [data-nav="home"]').click();
     setTimeout(() => { button.click(); button.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 260);
   };
+  /* Match the reference compositions while retaining every original control. */
+  const ghost = document.createElement('div');
+  ghost.className = 'hero-ghost';
+  ghost.innerHTML = ghostArt('ghost-float');
+  hero.prepend(ghost);
+  actions.classList.add('home-actions');
+  const previewGhost = document.createElement('div');
+  previewGhost.className = 'preview-ghost';
+  previewGhost.innerHTML = ghostArt('ghost-float');
+  preview.prepend(previewGhost);
+  document.querySelector('.coach-hero .av').innerHTML = ghostArt();
+  document.querySelector('#ringer .ghost').innerHTML = ghostArt('ghost-float');
+  const alarmTimes = document.querySelector('#paneAlarm .two');
+  alarmTimes.classList.remove('two');
+  alarmTimes.classList.add('alarm-time-inputs');
+  const separator = document.createElement('span');
+  separator.className = 'time-separator'; separator.textContent = ':'; separator.setAttribute('aria-hidden', 'true');
+  alarmTimes.insertBefore(separator, el('aMin').closest('.field'));
+  const daypart = document.createElement('div');
+  daypart.className = 'daypart';
+  daypart.innerHTML = '<button type="button" class="chip" data-daypart="am">AM</button><button type="button" class="chip" data-daypart="pm">PM</button>';
+  alarmTimes.after(daypart);
+  const paintDaypart = () => daypart.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.daypart === (Number(el('aHour').value) >= 12 ? 'pm' : 'am')));
+  daypart.addEventListener('click', event => {
+    const choice = event.target.closest('[data-daypart]'); if (!choice) return;
+    const hour = Number(el('aHour').value) || 0;
+    el('aHour').value = choice.dataset.daypart === 'pm' ? (hour % 12) + 12 : hour % 12;
+    paintQuick(); paintDaypart();
+  });
+  el('aHour').addEventListener('input', paintDaypart);
+  const originalOpenAlarm = openAlarmSheet;
+  openAlarmSheet = function(id) { originalOpenAlarm(id); paintDaypart(); };
+  document.querySelector('#alarmSheetTitle').insertAdjacentHTML('afterend', '<p class="sheet-subtitle">Choose your time. Your ghost will take care of the rest.</p>');
+  document.querySelector('#paneHabit .sheet-head').insertAdjacentHTML('afterend', '<p class="sheet-subtitle">Small steps. A little ghostly encouragement.</p>');
   const button = document.getElementById('weatherRefresh');
   const summary = document.getElementById('weatherSummary');
   button.onclick = () => {

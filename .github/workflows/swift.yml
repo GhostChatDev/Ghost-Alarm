@@ -57,6 +57,9 @@ jobs:
                 assert(await page.locator(`.tabbar [data-nav="${name}"]`).evaluate(node => node.classList.contains('on')), 'Active navigation must be highlighted');
               };
               await visible('#view-home');
+              assert.equal(await page.locator('.hero-ghost .ghost-art').count(), 1, 'Home uses the custom reference ghost');
+              assert.equal(await page.locator('.feature-grid [data-go="coach"]').count(), 0, 'Coach is not duplicated in More Features');
+              assert.equal(await page.locator('.feature-grid button').count(), 4, 'All useful feature tiles remain');
               await fits();
               await page.locator('#weatherRefresh').click();
               await page.waitForFunction(() => document.getElementById('weatherTemp').textContent === '28°C');
@@ -76,17 +79,13 @@ jobs:
                 await fits();
                 await nav('more');
               }
-              await page.locator('.feature-grid #moreWeather').click();
-              await visible('#weatherRefresh');
-              // Coach now lives in the tab bar, not in More Features
-              assert.equal(await page.locator('.feature-grid [data-go="coach"]').count(), 0);
-              await nav('coach');
-              await visible('#chatInput');
               await page.reload({ waitUntil: 'networkidle' });
-              await visible('#view-coach');
+              await visible('#view-more');
               await nav('home');
               await page.locator('#view-home [data-open="alarm"]').click();
               await visible('#paneAlarm');
+              await page.locator('[data-daypart="pm"]').click();
+              assert(await page.locator('[data-daypart="pm"]').evaluate(node => node.classList.contains('on')), 'AM/PM picker must select PM');
               await page.locator('#aHour').fill('23');
               await page.locator('#aMin').fill('59');
               await page.locator('#aLabel').fill('Browser regression alarm');
@@ -94,6 +93,10 @@ jobs:
               await nav('more');
               await page.locator('.feature-grid [data-go="alarms"]').click();
               assert.match(await page.locator('#alarmList').innerText(), /Browser regression alarm/);
+              await page.locator('#alarmList [data-test]').click();
+              await visible('#ringer.on');
+              assert.equal(await page.locator('#ringer .ghost-art').count(), 1, 'Ringer uses the custom ghost');
+              await page.locator('#ringerDone').click();
               await nav('coach');
               await visible('#chatInput');
               await page.locator('#ghostSettings').click();
