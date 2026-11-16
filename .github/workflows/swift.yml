@@ -73,7 +73,7 @@ jobs:
               assert.match(await page.locator('#weatherSummary').innerText(), /Location not available/);
               await nav('more');
               await visible('#challengeCard');
-              for (const tool of ['alarms', 'habits', 'sleep', 'coach']) {
+              for (const tool of ['alarms', 'habits', 'sleep']) {
                 await page.locator(`.feature-grid [data-go="${tool}"]`).click();
                 await visible('#view-' + tool);
                 await fits();
@@ -84,6 +84,8 @@ jobs:
               await nav('home');
               await page.locator('#view-home [data-open="alarm"]').click();
               await visible('#paneAlarm');
+              await page.locator('[data-daypart="pm"]').click();
+              assert(await page.locator('[data-daypart="pm"]').evaluate(node => node.classList.contains('on')), 'AM/PM picker must select PM');
               await page.locator('#aHour').fill('23');
               await page.locator('#aMin').fill('59');
               await page.locator('#aLabel').fill('Browser regression alarm');
@@ -91,6 +93,10 @@ jobs:
               await nav('more');
               await page.locator('.feature-grid [data-go="alarms"]').click();
               assert.match(await page.locator('#alarmList').innerText(), /Browser regression alarm/);
+              await page.locator('#alarmList [data-test]').click();
+              await visible('#ringer.on');
+              assert.equal(await page.locator('#ringer .ghost-art').count(), 1, 'Ringer uses the custom ghost');
+              await page.locator('#ringerDone').click();
               await nav('coach');
               await visible('#chatInput');
               await page.locator('#ghostSettings').click();
