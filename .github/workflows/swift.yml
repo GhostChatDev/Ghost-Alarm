@@ -83,7 +83,7 @@ jobs:
               await nav('coach');
               await visible('#chatInput');
               await page.reload({ waitUntil: 'networkidle' });
-              await visible('#view-more');
+              await visible('#view-coach');
               await nav('home');
               await page.locator('#view-home [data-open="alarm"]').click();
               await visible('#paneAlarm');
