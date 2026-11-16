@@ -223,6 +223,14 @@ body{background-image:radial-gradient(ellipse at 50% 0,#352653 0,transparent 48%
 .weather-temp{font-size:48px;font-weight:700;letter-spacing:-2px}.weather-card .hint{color:#ECE3FF}
 .coach-preview{position:relative;margin:44px 0 18px!important;padding-top:28px}.coach-preview:before{content:'👻';position:absolute;top:-40px;left:calc(50% - 30px);font-size:60px;filter:drop-shadow(0 0 18px #C3A6FF)}
 .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.feature-grid button{text-align:left;padding:20px;border:1px solid var(--line);border-radius:22px;background:#2B2735;font-weight:650}.feature-grid span{display:block;font-size:26px;margin-bottom:10px}
+/* Motion polish — cheap transform/opacity only, so it stays at 60fps */
+.view.on{animation:viewIn .26s ease both}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hero-time{animation:breathe 4.5s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.86}}
+.coach-preview{align-items:flex-start}
+.tonight-card{margin-top:18px!important}
+.tile-note{margin-top:6px;font-size:12.5px;color:var(--ink-soft)}
 #ringer{background:radial-gradient(ellipse at top,#342549,#181B1E 60%)}#ringerTime{font-size:clamp(70px,22vw,110px);font-weight:500}#ringer .ghost{font-size:86px;filter:drop-shadow(0 0 22px #B49AF7)}#ringer .row{flex-direction:column;width:min(350px,100%)}#ringer .btn{width:100%;border-radius:40px;padding:18px}#ringerDone{order:-1;background:#B49AF7!important;color:#19151F!important}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
@@ -413,6 +421,7 @@ body{background-image:radial-gradient(ellipse at 50% 0,#352653 0,transparent 48%
           <div class="field"><label for="aHour">Hour (0–23)</label><input id="aHour" type="number" min="0" max="23" required></div>
           <div class="field"><label for="aMin">Minute</label><input id="aMin" type="number" min="0" max="59" required></div>
         </div>
+        <div class="field"><label>Quick pick</label><div class="grid-chips" id="aQuick"></div></div>
         <div class="field"><label for="aLabel">Label</label><input id="aLabel" type="text" maxlength="40" placeholder="Morning run"></div>
         <div class="field"><label>Icon</label><div class="grid-chips" id="iconChips"></div></div>
         <div class="field"><label>Priority</label><div class="grid-chips" id="priorityChips"></div></div>
@@ -426,6 +435,16 @@ body{background-image:radial-gradient(ellipse at 50% 0,#352653 0,transparent 48%
         <div class="field"><label for="aMsg">Your ghost says</label>
           <textarea id="aMsg" maxlength="220" placeholder="Leave empty and your Ghost Coach picks a line."></textarea>
           <div class="hint">Spoken out loud when the alarm rings (if voice is on) and shown on the ringer.</div></div>
+        <div class="card tint" style="margin-bottom:14px">
+          <div class="row between">
+            <div class="grow">
+              <div style="font-weight:650;font-size:14px">Morning weather check 👻</div>
+              <div class="small muted" id="awState">Add your weather so the ghost writes a reminder for this alarm.</div>
+            </div>
+            <button class="switch" id="aWeather" type="button" data-on="1"></button>
+          </div>
+          <div class="hint" id="awPreview"></div>
+        </div>
         <div class="row between" style="margin:6px 0 14px">
           <div class="grow">
             <div style="font-weight:650;font-size:14px">Speak this alarm</div>
@@ -817,8 +836,15 @@ function speak(text) {
   try {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(String(text));
-    u.rate = S.settings.style === "tough" ? 1.06 : 0.98;
-    u.pitch = 1.02;
+    /* soft, cute ghost voice: gentle pace, higher pitch, softest system voice */
+    u.rate = S.settings.style === "tough" ? 0.98 : 0.9;
+    u.pitch = S.settings.style === "tough" ? 1.25 : 1.4;
+    u.volume = 0.95;
+    const voices = window.speechSynthesis.getVoices() || [];
+    const soft = voices.filter(function (v) {
+      return /samantha|karen|moira|tessa|fiona|zira|aria|jenny|female|soft|junior/i.test(v.name) && /^en/i.test(v.lang);
+    })[0];
+    if (soft) u.voice = soft;
     window.speechSynthesis.speak(u);
   } catch (e) { }
 }
@@ -1242,6 +1268,93 @@ function setSwitch(node, on) {
 }
 function switchOn(node) { return node && node.getAttribute("data-on") === "1"; }
 
+/* ------------------------------------ quick wake-up times in the alarm picker */
+const QUICK_TIMES = [{ h: 5, m: 30 }, { h: 6, m: 30 }, { h: 7, m: 0 }, { h: 7, m: 30 }, { h: 8, m: 0 }];
+function paintQuick() {
+  const box = el("aQuick");
+  if (!box) return;
+  const h = Number(el("aHour").value), m = Number(el("aMin").value);
+  html(box, QUICK_TIMES.map(function (t) {
+    const on = t.h === h && t.m === m;
+    return '<button type="button" class="chip' + (on ? " on" : "") + '" data-quick="' + t.h + ":" + t.m + '">' + fmt12(t.h, t.m) + "</button>";
+  }).join(""));
+}
+function setQuick(value) {
+  const parts = String(value).split(":");
+  const h = Math.max(0, Math.min(23, Number(parts[0]) || 0));
+  const m = Math.max(0, Math.min(59, Number(parts[1]) || 0));
+  el("aHour").value = h;
+  el("aMin").value = m;
+  paintQuick();
+}
+
+/* ------------------------------------ weather-aware alarm reminder (Open-Meteo) */
+const weatherBox = { temp: null, code: null, rain: null, loading: false };
+function weatherKnown() { return Number.isFinite(weatherBox.temp) && Number.isFinite(weatherBox.code); }
+function weatherWord() {
+  const c = weatherBox.code;
+  return c === 0 ? "clear skies" : c <= 3 ? "some cloud" : c <= 48 ? "fog" : c <= 67 ? "rain" : c <= 77 ? "snow" : c <= 82 ? "rain showers" : c <= 86 ? "snow showers" : "thunderstorms";
+}
+function weatherReminder() {
+  if (!weatherKnown()) return "";
+  let line = "It's " + Math.round(weatherBox.temp) + "° and " + weatherWord() + " outside.";
+  if (Number.isFinite(weatherBox.rain) && weatherBox.rain >= 40) line += " " + weatherBox.rain + "% chance of rain today — grab a jacket.";
+  else if (weatherBox.temp <= 10) line += " Dress warm.";
+  return line;
+}
+function paintWeatherPreview() {
+  const state = el("awState"), preview = el("awPreview");
+  if (!state || !preview) return;
+  if (switchOn(el("aWeather"))) {
+    state.textContent = weatherKnown() ? "Your ghost adds a line about the morning." : "Add your weather so the ghost writes a reminder for this alarm.";
+    preview.textContent = weatherKnown() ? "Ringer will say: " + weatherReminder() : "";
+  } else {
+    state.textContent = "Off — the alarm keeps its own message.";
+    preview.textContent = "";
+  }
+}
+function applyWeather(payload) {
+  const t = payload && payload.current ? payload.current.temperature_2m : null;
+  const c = payload && payload.current ? payload.current.weather_code : null;
+  const r = payload && payload.daily ? payload.daily.precipitation_probability_max : null;
+  if (Number.isFinite(t)) weatherBox.temp = t;
+  if (Number.isFinite(c)) weatherBox.code = c;
+  if (Array.isArray(r) && Number.isFinite(r[0])) weatherBox.rain = r[0];
+  const temp = el("weatherTemp"), summary = el("weatherSummary");
+  if (weatherKnown() && temp && summary) {
+    temp.textContent = Math.round(weatherBox.temp) + "°C";
+    summary.textContent = weatherWord().charAt(0).toUpperCase() + weatherWord().slice(1) + (Number.isFinite(weatherBox.rain) ? " · Today " + weatherBox.rain + "% chance of precipitation." : "") + " Updated " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  }
+  const note = document.getElementById("moreWeatherNote");
+  if (note && weatherKnown()) note.textContent = Math.round(weatherBox.temp) + "° · " + weatherWord();
+  paintWeatherPreview();
+}
+function loadWeatherForAlarm() {
+  if (weatherBox.loading || !el("awState")) return;
+  if (!navigator.geolocation) { el("awState").textContent = "Location is unavailable in this browser."; return; }
+  weatherBox.loading = true;
+  el("awState").textContent = "Getting your morning weather…";
+  const done = function (message) {
+    weatherBox.loading = false;
+    el("awState").textContent = message;
+    paintWeatherPreview();
+  };
+  navigator.geolocation.getCurrentPosition(function (position) {
+    const { latitude, longitude } = position.coords;
+    const controller = new AbortController();
+    const timer = setTimeout(function () { controller.abort(); }, 12000);
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=" + latitude.toFixed(2) + "&longitude=" + longitude.toFixed(2) + "&current=temperature_2m,weather_code&daily=precipitation_probability_max&forecast_days=1&timezone=auto", { signal: controller.signal })
+      .then(function (response) { if (!response.ok) throw new Error("bad"); return response.json(); })
+      .then(function (data) { applyWeather(data); done("Weather ready — the ghost will mention it."); })
+      .catch(function () { done("Weather could not load. Check your connection and try again."); })
+      .finally(function () { clearTimeout(timer); });
+  }, function () { done("Location not available. Allow location access and try again."); }, { timeout: 10000, maximumAge: 300000 });
+}
+function alarmMessage(a) {
+  const base = a.msg && a.msg.trim() ? a.msg.trim() : coachLine();
+  return /outside|chance of rain/.test(base) ? base : base + (weatherReminder() ? " " + weatherReminder() : "");
+}
+
 function openAlarmSheet(id) {
   const a = S.alarms.filter(function (x) { return x.id === id; })[0] || null;
   const now = new Date();
@@ -1263,8 +1376,12 @@ function openAlarmSheet(id) {
   }).join(""));
   el("aTone").value = a ? (a.tone || "chime") : "chime";
   setSwitch(el("aVoice"), a ? a.voice !== false : true);
+  setSwitch(el("aWeather"), a ? /outside|chance of rain/.test(a.msg || "") : true);
   el("aDelete").style.display = a ? "inline-flex" : "none";
   renderAlarmChips();
+  paintQuick();
+  paintWeatherPreview();
+  if (switchOn(el("aWeather")) && !weatherKnown() && !weatherBox.loading) loadWeatherForAlarm();
   openSheet("paneAlarm");
 }
 function openHabitSheet(id) {
@@ -1390,6 +1507,10 @@ document.addEventListener("click", function (ev) {
     if (S.view === "coach") renderCoach();
     return;
   }
+  if ((n = hit("[data-quick]"))) {
+    setQuick(n.getAttribute("data-quick"));
+    return;
+  }
   if ((n = hit("[data-open]"))) {
     const what = n.getAttribute("data-open");
     if (what === "alarm") openAlarmSheet(null);
@@ -1488,6 +1609,12 @@ document.addEventListener("click", function (ev) {
   }
   if (t === el("setRing")) { S.settings.ringOn = !S.settings.ringOn; save(); renderSettings(); return; }
   if (t === el("aVoice")) { setSwitch(t, !switchOn(t)); return; }
+  if (t === el("aWeather")) {
+    setSwitch(t, !switchOn(t));
+    paintWeatherPreview();
+    if (switchOn(t) && !weatherKnown()) loadWeatherForAlarm();
+    return;
+  }
   if (t === el("testVoice")) { speak(coachLine() + " " + challengeOfDay().b); toast("👻 Speaking"); return; }
   if (t === el("testRing")) {
     const a = { h: new Date().getHours(), m: new Date().getMinutes(), e: "👻", label: "Test", tone: el("aTone") ? el("aTone").value : "chime", snooze: 5, msg: "" };
@@ -1550,6 +1677,7 @@ function testProvider() {
 
 document.addEventListener("input", function (ev) {
   if (ev.target === el("sQuality")) el("sQualityLabel").textContent = el("sQuality").value + "/5";
+  if (ev.target === el("aHour") || ev.target === el("aMin")) paintQuick();
 });
 document.addEventListener("keydown", function (ev) {
   if (ev.key === "Escape") closeSheet();
@@ -1654,7 +1782,12 @@ boot();
   const home = document.getElementById('view-home');
   const more = document.createElement('section');
   more.id = 'view-more'; more.className = 'view';
-  more.innerHTML = '<h2>More Features</h2><p class="muted small" style="margin-top:8px">All your familiar tools, in one place.</p><div class="feature-grid"><button data-go="alarms"><span>⏰</span>Alarms</button><button data-go="habits"><span>🌱</span>Habits</button><button data-go="sleep"><span>🌙</span>Sleep & sounds</button><button data-go="coach"><span>👻</span>Coach & voice</button></div>';
+  more.innerHTML = '<h2>More Features</h2><p class="muted small" style="margin-top:8px">Everything else your ghost keeps an eye on.</p><div class="feature-grid">' +
+    '<button data-go="alarms"><span>⏰</span>Alarms<div class="tile-note">Set, repeat, snooze</div></button>' +
+    '<button data-go="habits"><span>🌱</span>Habits<div class="tile-note">Streaks and check-ins</div></button>' +
+    '<button data-go="sleep"><span>🌙</span>Sleep &amp; sounds<div class="tile-note">Bedtime timer and noise</div></button>' +
+    '<button id="moreWeather"><span>🌤</span>Weather<div class="tile-note" id="moreWeatherNote">Tap for forecast</div></button>' +
+    '</div>';
   home.parentNode.append(more);
   const challenge = document.getElementById('challengeCard');
   more.append(challenge.previousElementSibling, challenge);
@@ -1672,11 +1805,39 @@ boot();
   const weather = document.createElement('div');
   weather.className = 'card weather-card';
   weather.innerHTML = '<div class="small">YOUR WEATHER</div><div class="weather-temp" id="weatherTemp">—</div><div id="weatherSummary" role="status" aria-live="polite">A little clarity for your morning.</div><button class="btn plain sm" id="weatherRefresh" style="margin-top:14px">Use my location</button><div class="hint">Location is shared with Open-Meteo for a live forecast. No API key required.</div>';
-  home.append(weather);
-  const bar = document.querySelector('.tabbar .inner');
-  bar.innerHTML = '<button class="ghost-nav" data-nav="home"><span>👻</span>Home</button><button class="ghost-nav" data-nav="coach"><span>💬</span>Coach</button><button class="ghost-nav" data-nav="more"><span>✦</span>More Features</button><button class="ghost-nav" id="ghostSettings"><span>⚙</span>Settings</button>';
+
+  /* Home = ghost clock, morning coach, weather, tonight */
+  const hero = document.querySelector('.hero');
+  const coachTitle = document.createElement('div');
+  coachTitle.className = 'sec-title';
+  coachTitle.textContent = 'Your morning coach';
+  hero.after(actions, weather, coachTitle, preview);
+
+  const tonight = document.createElement('div');
+  tonight.className = 'card tonight-card';
+  tonight.innerHTML = '<div class="row between"><div class="grow"><div class="tiny muted">TONIGHT</div>' +
+    '<div style="font-weight:700;margin-top:4px" id="tonightNext">No alarm set</div>' +
+    '<div class="small muted" id="tonightHint">Aim for 7–8 hours. Your ghost will nudge you at bedtime.</div></div>' +
+    '<button class="btn soft sm" data-go="sleep">Sleep</button></div>' +
+    '<button class="btn plain block sm" style="margin-top:12px" data-go="more">✦ More features</button>';
+  preview.after(tonight);
+
+  const syncTonight = () => {
+    const live = document.getElementById('statNext'), text = document.getElementById('tonightNext');
+    if (live && text) text.textContent = live.textContent;
+  };
+  syncTonight();
+  setTimeout(syncTonight, 800);
+  setInterval(syncTonight, 5000);
+  document.querySelector('.tabbar .inner').innerHTML = '<button class="ghost-nav" data-nav="home"><span>👻</span>Home</button><button class="ghost-nav" data-nav="coach"><span>💬</span>Coach</button><button class="ghost-nav" data-nav="more"><span>✦</span>More Features</button><button class="ghost-nav" id="ghostSettings"><span>⚙</span>Settings</button>';
   renderTabs();
   document.getElementById('ghostSettings').onclick = () => document.getElementById('btnSettings').click();
+  document.getElementById('moreWeather').onclick = () => {
+    const button = document.getElementById('weatherRefresh');
+    toast('Weather lives on your Home screen');
+    document.querySelector('.tabbar [data-nav="home"]').click();
+    setTimeout(() => { button.click(); button.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 260);
+  };
   const button = document.getElementById('weatherRefresh');
   const summary = document.getElementById('weatherSummary');
   button.onclick = () => {
