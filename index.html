@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F7F4FF">
+<meta name="theme-color" content="#19191F">
 <title>Ghost Alarm — wake up with your Ghost Coach</title>
 <style>
 /* ------------------------------------------------ tokens: light violet, ghost themed */
@@ -201,6 +201,29 @@ input,select,textarea{font:inherit;color:inherit}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:112px;z-index:90;background:#33245F;color:#fff;
   padding:11px 16px;border-radius:14px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .22s}
 #toast.on{opacity:1}
+/* Ghost Coach — charcoal surfaces and soft lavender light */
+:root{color-scheme:dark;--violet:#B49AF7;--violet-dark:#C8B4FF;--violet-deep:#E5D9FF;--violet-pale:#39304F;--violet-soft:#292535;--cream:#19191F;--ink:#F5F3FA;--ink-soft:#ADA6BC;--line:#40394F;--shadow:0 12px 32px #0002}
+body{background-image:radial-gradient(ellipse at 50% 0,#352653 0,transparent 48%)}
+.appbar{background:#19191Fdc;border-bottom:1px solid var(--line)}
+.card,.item,.sound-card,.knowledge-item,.icon-btn,.chip,.quick-reply,.btn.plain,.ring span{background:#28272F}
+.card.tint{background:#30283F;border-color:#4C4062}
+.btn.primary{background:linear-gradient(130deg,#BCA4FF,#8560DA);color:#17131F}
+.btn.soft,.chip.on{border-color:#75618F;color:#DDCCFF}
+.quick-reply{border:1px solid #BCA4EE;border-radius:999px;color:#D9C6FF}
+.composer input,.field input,.field select,.field textarea{background:#302E38!important;min-width:0}
+.hero{background:linear-gradient(140deg,#24212D,#17161D);border:1px solid #A487D4;box-shadow:0 0 28px #A16DF12B;padding:26px}
+.hero:after{display:none}.hero-time{font-size:clamp(58px,17vw,82px);font-weight:650;letter-spacing:-4px;margin:12px 0}
+.hero-next{background:#B49AF714}.hero .lbl{color:#DDCCFF}
+.coach-hero{background:linear-gradient(130deg,#3D3058,#292330)}
+.tabbar{background:#27262Eed}.tabbar .inner{grid-template-columns:repeat(4,1fr)}
+.ghost-nav{padding:14px 2px;color:var(--ink-soft);font-size:12px}.ghost-nav span{display:block;font-size:23px;margin-bottom:4px}
+.ghost-nav:focus-visible,button:focus-visible{outline:2px solid #D4BCFF;outline-offset:3px}
+.weather-card{margin-top:18px!important;background:linear-gradient(125deg,#6031AC,#7355CB)!important;border:0;color:white;overflow:hidden}
+.weather-temp{font-size:48px;font-weight:700;letter-spacing:-2px}.weather-card .hint{color:#ECE3FF}
+.coach-preview{position:relative;margin:44px 0 18px!important;padding-top:28px}.coach-preview:before{content:'👻';position:absolute;top:-40px;left:calc(50% - 30px);font-size:60px;filter:drop-shadow(0 0 18px #C3A6FF)}
+.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.feature-grid button{text-align:left;padding:20px;border:1px solid var(--line);border-radius:22px;background:#2B2735;font-weight:650}.feature-grid span{display:block;font-size:26px;margin-bottom:10px}
+#ringer{background:radial-gradient(ellipse at top,#342549,#181B1E 60%)}#ringerTime{font-size:clamp(70px,22vw,110px);font-weight:500}#ringer .ghost{font-size:86px;filter:drop-shadow(0 0 22px #B49AF7)}#ringer .row{flex-direction:column;width:min(350px,100%)}#ringer .btn{width:100%;border-radius:40px;padding:18px}#ringerDone{order:-1;background:#B49AF7!important;color:#19151F!important}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -1626,6 +1649,62 @@ function boot() {
   toast("👻 Ghost Alarm ready");
 }
 boot();
+</script>
+<script>
+// Keep the existing tools and their handlers; only reorganize their entry points.
+(() => {
+  document.querySelector('.brand').innerHTML = 'Ghost Coach<small>A better morning starts tonight.</small>';
+  const home = document.getElementById('view-home');
+  const more = document.createElement('section');
+  more.id = 'view-more'; more.className = 'view';
+  more.innerHTML = '<h2>More Features</h2><p class="muted small" style="margin-top:8px">All your familiar tools, in one place.</p><div class="feature-grid"><button data-go="alarms"><span>⏰</span>Alarms</button><button data-go="habits"><span>🌱</span>Habits</button><button data-go="sleep"><span>🌙</span>Sleep & sounds</button><button data-go="coach"><span>👻</span>Coach & voice</button></div>';
+  home.parentNode.append(more);
+  const challenge = document.getElementById('challengeCard');
+  more.append(challenge.previousElementSibling, challenge);
+  const preview = document.getElementById('coachLine').closest('.card');
+  preview.classList.add('coach-preview');
+  preview.previousElementSibling.remove();
+  const stats = document.getElementById('statNext').closest('.mini');
+  more.append(stats.previousElementSibling, stats);
+  const habits = document.getElementById('homeHabits');
+  more.append(habits.previousElementSibling, habits);
+  const actions = document.createElement('div');
+  actions.className = 'row'; actions.style.marginTop = '16px';
+  actions.innerHTML = '<button class="btn primary block" data-open="alarm">Set your wake-up</button><button class="btn plain" data-go="alarms">Alarms</button>';
+  document.querySelector('.hero').after(actions);
+  const weather = document.createElement('div');
+  weather.className = 'card weather-card';
+  weather.innerHTML = '<div class="small">YOUR WEATHER</div><div class="weather-temp" id="weatherTemp">—</div><div id="weatherSummary" role="status" aria-live="polite">A little clarity for your morning.</div><button class="btn plain sm" id="weatherRefresh" style="margin-top:14px">Use my location</button><div class="hint">Location is shared with Open-Meteo for a live forecast. No API key required.</div>';
+  home.append(weather);
+  const bar = document.querySelector('.tabbar .inner');
+  bar.innerHTML = '<button class="ghost-nav" data-go="home"><span>👻</span>Home</button><button class="ghost-nav" data-go="coach"><span>💬</span>Coach</button><button class="ghost-nav" data-go="more"><span>✦</span>More Features</button><button class="ghost-nav" id="ghostSettings"><span>⚙</span>Settings</button>';
+  document.getElementById('ghostSettings').onclick = () => document.getElementById('btnSettings').click();
+  const button = document.getElementById('weatherRefresh');
+  const summary = document.getElementById('weatherSummary');
+  button.onclick = () => {
+    if (!navigator.geolocation) { summary.textContent = 'Location is unavailable in this browser.'; return; }
+    button.disabled = true; summary.textContent = 'Finding your local weather…';
+    const fail = message => { summary.textContent = message; button.disabled = false; button.textContent = 'Try again'; };
+    navigator.geolocation.getCurrentPosition(async position => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
+      try {
+        const {latitude, longitude} = position.coords;
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude.toFixed(2)}&longitude=${longitude.toFixed(2)}&current=temperature_2m,weather_code&daily=precipitation_probability_max&forecast_days=2&timezone=auto`, {signal:controller.signal});
+        if (!response.ok) throw new Error('Weather unavailable');
+        const data = await response.json();
+        const temperature = data.current?.temperature_2m, code = data.current?.weather_code;
+        if (!Number.isFinite(temperature) || !Number.isFinite(code)) throw new Error('Invalid forecast');
+        document.getElementById('weatherTemp').textContent = Math.round(temperature) + '°C';
+        const condition = code === 0 ? 'Clear sky' : code <= 3 ? 'Cloudy skies' : code <= 48 ? 'Foggy' : code <= 67 ? 'Rain' : code <= 77 ? 'Snow' : code <= 82 ? 'Rain showers' : code <= 86 ? 'Snow showers' : 'Thunderstorms';
+        const rain = data.daily?.precipitation_probability_max?.[1];
+        summary.textContent = condition + (Number.isFinite(rain) ? ` · Tomorrow: ${rain}% chance of precipitation.` : '') + ' Updated ' + new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+        button.disabled = false; button.textContent = 'Refresh weather';
+      } catch (_) { fail('Weather could not load. Check your connection and try again.'); }
+      finally { clearTimeout(timeout); }
+    }, () => fail('Location not available. Allow location access in your browser and try again.'), {timeout:10000, maximumAge:300000});
+  };
+})();
 </script>
 </body>
 </html>
