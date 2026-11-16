@@ -572,13 +572,9 @@ function load() {
   } catch (e) { return defaults(); }
 }
 
-let saveTimer = null;
 function save() {
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(function () {
-    saveTimer = null;
-    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { }
-  }, 120);
+  // Persist immediately so navigation or reload cannot discard recent changes.
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { }
 }
 
 function uid() { return Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
