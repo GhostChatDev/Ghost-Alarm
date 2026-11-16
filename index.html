@@ -421,6 +421,7 @@ body{background-image:radial-gradient(ellipse at 50% 0,#352653 0,transparent 48%
           <div class="field"><label for="aHour">Hour (0–23)</label><input id="aHour" type="number" min="0" max="23" required></div>
           <div class="field"><label for="aMin">Minute</label><input id="aMin" type="number" min="0" max="59" required></div>
         </div>
+        <div class="field"><label>Quick pick</label><div class="grid-chips" id="aQuick"></div></div>
         <div class="field"><label for="aLabel">Label</label><input id="aLabel" type="text" maxlength="40" placeholder="Morning run"></div>
         <div class="field"><label>Icon</label><div class="grid-chips" id="iconChips"></div></div>
         <div class="field"><label>Priority</label><div class="grid-chips" id="priorityChips"></div></div>
@@ -434,6 +435,16 @@ body{background-image:radial-gradient(ellipse at 50% 0,#352653 0,transparent 48%
         <div class="field"><label for="aMsg">Your ghost says</label>
           <textarea id="aMsg" maxlength="220" placeholder="Leave empty and your Ghost Coach picks a line."></textarea>
           <div class="hint">Spoken out loud when the alarm rings (if voice is on) and shown on the ringer.</div></div>
+        <div class="card tint" style="margin-bottom:14px">
+          <div class="row between">
+            <div class="grow">
+              <div style="font-weight:650;font-size:14px">Morning weather check 👻</div>
+              <div class="small muted" id="awState">Add your weather so the ghost writes a reminder for this alarm.</div>
+            </div>
+            <button class="switch" id="aWeather" type="button" data-on="1"></button>
+          </div>
+          <div class="hint" id="awPreview"></div>
+        </div>
         <div class="row between" style="margin:6px 0 14px">
           <div class="grow">
             <div style="font-weight:650;font-size:14px">Speak this alarm</div>
@@ -1250,6 +1261,73 @@ function setSwitch(node, on) {
 }
 function switchOn(node) { return node && node.getAttribute("data-on") === "1"; }
 
+/* ------------------------------------ weather-aware alarm reminder (Open-Meteo) */
+const weatherBox = { temp: null, code: null, rain: null, loading: false };
+function weatherKnown() { return Number.isFinite(weatherBox.temp) && Number.isFinite(weatherBox.code); }
+function weatherWord() {
+  const c = weatherBox.code;
+  return c === 0 ? "clear skies" : c <= 3 ? "some cloud" : c <= 48 ? "fog" : c <= 67 ? "rain" : c <= 77 ? "snow" : c <= 82 ? "rain showers" : c <= 86 ? "snow showers" : "thunderstorms";
+}
+function weatherReminder() {
+  if (!weatherKnown()) return "";
+  let line = "It's " + Math.round(weatherBox.temp) + "° and " + weatherWord() + " outside.";
+  if (Number.isFinite(weatherBox.rain) && weatherBox.rain >= 40) line += " " + weatherBox.rain + "% chance of rain today — grab a jacket.";
+  else if (weatherBox.temp <= 10) line += " Dress warm.";
+  return line;
+}
+function paintWeatherPreview() {
+  const state = el("awState"), preview = el("awPreview");
+  if (!state || !preview) return;
+  if (switchOn(el("aWeather"))) {
+    state.textContent = weatherKnown() ? "Your ghost adds a line about the morning." : "Add your weather so the ghost writes a reminder for this alarm.";
+    preview.textContent = weatherKnown() ? "Ringer will say: " + weatherReminder() : "";
+  } else {
+    state.textContent = "Off — the alarm keeps its own message.";
+    preview.textContent = "";
+  }
+}
+function applyWeather(payload) {
+  const t = payload && payload.current ? payload.current.temperature_2m : null;
+  const c = payload && payload.current ? payload.current.weather_code : null;
+  const r = payload && payload.daily ? payload.daily.precipitation_probability_max : null;
+  if (Number.isFinite(t)) weatherBox.temp = t;
+  if (Number.isFinite(c)) weatherBox.code = c;
+  if (Array.isArray(r) && Number.isFinite(r[0])) weatherBox.rain = r[0];
+  const temp = el("weatherTemp"), summary = el("weatherSummary");
+  if (weatherKnown() && temp && summary) {
+    temp.textContent = Math.round(weatherBox.temp) + "°C";
+    summary.textContent = weatherWord().charAt(0).toUpperCase() + weatherWord().slice(1) + (Number.isFinite(weatherBox.rain) ? " · Today " + weatherBox.rain + "% chance of precipitation." : "") + " Updated " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  }
+  const note = document.getElementById("moreWeatherNote");
+  if (note && weatherKnown()) note.textContent = Math.round(weatherBox.temp) + "° · " + weatherWord();
+  paintWeatherPreview();
+}
+function loadWeatherForAlarm() {
+  if (weatherBox.loading || !el("awState")) return;
+  if (!navigator.geolocation) { el("awState").textContent = "Location is unavailable in this browser."; return; }
+  weatherBox.loading = true;
+  el("awState").textContent = "Getting your morning weather…";
+  const done = function (message) {
+    weatherBox.loading = false;
+    el("awState").textContent = message;
+    paintWeatherPreview();
+  };
+  navigator.geolocation.getCurrentPosition(function (position) {
+    const { latitude, longitude } = position.coords;
+    const controller = new AbortController();
+    const timer = setTimeout(function () { controller.abort(); }, 12000);
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=" + latitude.toFixed(2) + "&longitude=" + longitude.toFixed(2) + "&current=temperature_2m,weather_code&daily=precipitation_probability_max&forecast_days=1&timezone=auto", { signal: controller.signal })
+      .then(function (response) { if (!response.ok) throw new Error("bad"); return response.json(); })
+      .then(function (data) { applyWeather(data); done("Weather ready — the ghost will mention it."); })
+      .catch(function () { done("Weather could not load. Check your connection and try again."); })
+      .finally(function () { clearTimeout(timer); });
+  }, function () { done("Location not available. Allow location access and try again."); }, { timeout: 10000, maximumAge: 300000 });
+}
+function alarmMessage(a) {
+  const base = a.msg && a.msg.trim() ? a.msg.trim() : coachLine();
+  return /outside|chance of rain/.test(base) ? base : base + (weatherReminder() ? " " + weatherReminder() : "");
+}
+
 function openAlarmSheet(id) {
   const a = S.alarms.filter(function (x) { return x.id === id; })[0] || null;
   const now = new Date();
@@ -1271,8 +1349,12 @@ function openAlarmSheet(id) {
   }).join(""));
   el("aTone").value = a ? (a.tone || "chime") : "chime";
   setSwitch(el("aVoice"), a ? a.voice !== false : true);
+  setSwitch(el("aWeather"), a ? /outside|chance of rain/.test(a.msg || "") : true);
   el("aDelete").style.display = a ? "inline-flex" : "none";
   renderAlarmChips();
+  paintQuick();
+  paintWeatherPreview();
+  if (switchOn(el("aWeather")) && !weatherKnown() && !weatherBox.loading) loadWeatherForAlarm();
   openSheet("paneAlarm");
 }
 function openHabitSheet(id) {
