@@ -246,6 +246,17 @@ body{background:radial-gradient(ellipse 100% 32% at 50% 0,#271C36 0,transparent 
 #ringer{background:radial-gradient(ellipse 80% 50% at 50% 34%,#3A2553 0,#17131D 70%);padding:32px 24px}#ringer .ghost{height:150px;display:grid;place-items:center}#ringer .ghost .ghost-art{width:132px;height:147px}#ringerTime{font-size:clamp(72px,22vw,104px);letter-spacing:-5px;font-weight:450;margin-top:12px}#ringerLabel{font-size:16px;color:#C3B5D4}#ringerMsg{max-width:340px;line-height:1.65;font-size:15px;color:#B7ACCA;margin:18px 0 28px}#ringer .row{gap:12px}#ringerDone{min-height:58px;font-size:17px;box-shadow:0 8px 28px #AC80EF2B!important}#ringerSnooze{min-height:50px;background:#FFFFFF08!important;border-color:#5D496D!important;color:#D8C6E9!important}
 .tabbar{background:#1B1920F2;border-top:1px solid #342C3C;backdrop-filter:blur(18px)}.tabbar .inner{max-width:500px}.ghost-nav{padding:13px 2px 12px;font-size:10px;position:relative;transition:color .2s}.ghost-nav span{font-size:21px;filter:grayscale(1);opacity:.7;transition:transform .2s,opacity .2s,filter .2s}.ghost-nav.on{color:#D4B9FF}.ghost-nav.on span{filter:none;opacity:1;transform:translateY(-2px)}.ghost-nav.on:after{content:"";position:absolute;bottom:4px;left:calc(50% - 3px);width:6px;height:6px;background:#C4A4FA;border-radius:50%}
 .item{background:#211F27;box-shadow:none;border-radius:22px}.item .ico{background:#30283B}.btn,.chip,.quick-reply{transition:transform .18s,background .18s,border-color .18s}.sound-card,.knowledge-item{box-shadow:none}.view.on{animation:viewIn .28s cubic-bezier(.2,.75,.25,1) both}
+.alarm-card{position:relative;margin-top:18px;padding:22px 22px 20px;border:1.5px solid #8A63C4!important;background:linear-gradient(145deg,#2A2237,#201D27)!important;border-radius:28px!important;box-shadow:0 0 34px #9A69DC22;overflow:visible}.alarm-card-label{letter-spacing:1.6px;font-size:11px;font-weight:700}.alarm-card-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 4px}.alarm-card-time{font-size:clamp(46px,14vw,60px);font-weight:500;letter-spacing:-2px;line-height:1.1}.alarm-card-time small{font-size:20px;letter-spacing:0;margin-left:6px;color:#CDB5F5;font-weight:600}.alarm-card-ghost{position:absolute;right:16px;top:-34px;pointer-events:none}.alarm-card-ghost .ghost-art{width:54px;height:60px}.alarm-card .switch{width:58px;height:34px;background:#3A3345}.alarm-card .switch.on{background:#B99AF7}.alarm-card .switch:after{width:28px;height:28px}.alarm-card .switch.on:after{transform:translateX(24px)}
+/* Extra motion — transform/opacity only (GPU-composited, 60fps) */
+.hero-ghost:before{content:"";position:absolute;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,#B99AF744,transparent 68%);animation:halo 3.6s ease-in-out infinite;will-change:transform,opacity}
+.hero-ghost{position:relative}.hero-ghost .ghost-art{position:relative}
+@keyframes halo{0%,100%{transform:scale(.9);opacity:.55}50%{transform:scale(1.12);opacity:1}}
+#ringer.on .ghost-art{animation:ghostFloat 1.8s ease-in-out infinite,wiggle .5s ease-in-out infinite alternate}
+@keyframes wiggle{from{rotate:-4deg}to{rotate:4deg}}
+#ringer.on #ringerTime{animation:breathe 1.6s ease-in-out infinite}
+.view.on>*{animation:viewIn .34s cubic-bezier(.2,.75,.25,1) both}
+.view.on>*:nth-child(2){animation-delay:.04s}.view.on>*:nth-child(3){animation-delay:.08s}.view.on>*:nth-child(4){animation-delay:.12s}.view.on>*:nth-child(5){animation-delay:.16s}
+.btn:active,.chip:active,.ghost-nav:active{transform:scale(.96)}
 @media(min-width:700px){body{padding-top:10px}.wrap{max-width:540px}.tabbar .inner{max-width:540px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.ghost-float{will-change:auto}}
 </style>
@@ -294,7 +305,8 @@ body{background:radial-gradient(ellipse 100% 32% at 50% 0,#271C36 0,transparent 
       <div class="row">
         <div class="ico" style="width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:20px;background:#fff">👻</div>
         <div class="grow">
-          <div style="font-weight:700">Ghost Coach</div>
+          <div style="font-weight:700">AI Coach ✦</div>
+          <div style="font-weight:600;margin-top:4px;color:#E4D6FA">Ready for tomorrow?</div>
           <div class="small muted" id="coachLine">Ready to push you.</div>
         </div>
       </div>
@@ -1108,6 +1120,20 @@ function renderHome() {
   const best = S.habits.reduce(function (m, x) { return Math.max(m, streakOf(x)); }, 0);
   el("challengeStreak").textContent = "Challenge streak: " + (S.challenge.streak || 0) + " day(s) · Best habit streak: " + best + "d";
   el("coachLine").textContent = coachLine();
+  if (el("alarmCard")) {
+    const shown = nx ? nx.alarm : S.alarms[0];
+    const sw = el("alarmCardSwitch");
+    if (shown) {
+      el("alarmCardTime").innerHTML = (shown.h % 12 || 12) + ":" + pad(shown.m) + "<small>" + (shown.h >= 12 ? "PM" : "AM") + "</small>";
+      el("alarmCardWhen").textContent = (nx ? (nx.when.toDateString() === now.toDateString() ? "Today" : "Tomorrow") + " · " : "Off · ") + repeatText(shown);
+      sw.style.display = ""; sw.setAttribute("data-toggle", shown.id);
+      sw.classList.toggle("on", shown.on !== false);
+    } else {
+      el("alarmCardTime").innerHTML = "--:--";
+      el("alarmCardWhen").textContent = "No alarm set";
+      sw.style.display = "none"; sw.removeAttribute("data-toggle");
+    }
+  }
   el("statHabits").textContent = habitsDoneToday() + "/" + S.habits.length;
   el("statStreak").textContent = best + "d";
   const ls = lastSleep();
@@ -1829,6 +1855,15 @@ boot();
   coachTitle.className = 'sec-title';
   coachTitle.textContent = 'Your morning coach';
   hero.after(actions, weather, coachTitle, preview);
+  const alarmCard = document.createElement('div');
+  alarmCard.className = 'card alarm-card'; alarmCard.id = 'alarmCard';
+  alarmCard.innerHTML = '<div class="alarm-card-ghost">' + ghostArt('ghost-float') + '</div>' +
+    '<div class="tiny muted alarm-card-label">NEXT WAKE-UP</div>' +
+    '<div class="alarm-card-row"><div class="alarm-card-time" id="alarmCardTime">--:--</div>' +
+    '<button class="switch on" id="alarmCardSwitch" aria-label="Toggle next alarm"></button></div>' +
+    '<div class="small muted" id="alarmCardWhen">No alarm set</div>';
+  hero.after(alarmCard);
+  try { renderHome(); } catch (_) {}
 
   const tonight = document.createElement('div');
   tonight.className = 'card tonight-card';
