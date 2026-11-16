@@ -217,6 +217,7 @@ body{background-image:radial-gradient(ellipse at 50% 0,#352653 0,transparent 48%
 .coach-hero{background:linear-gradient(130deg,#3D3058,#292330)}
 .tabbar{background:#27262Eed}.tabbar .inner{grid-template-columns:repeat(4,1fr)}
 .ghost-nav{padding:14px 2px;color:var(--ink-soft);font-size:12px}.ghost-nav span{display:block;font-size:23px;margin-bottom:4px}
+.ghost-nav.on{color:#DDCCFF;background:#B49AF714}
 .ghost-nav:focus-visible,button:focus-visible{outline:2px solid #D4BCFF;outline-offset:3px}
 .weather-card{margin-top:18px!important;background:linear-gradient(125deg,#6031AC,#7355CB)!important;border:0;color:white;overflow:hidden}
 .weather-temp{font-size:48px;font-weight:700;letter-spacing:-2px}.weather-card .hint{color:#ECE3FF}
@@ -1677,7 +1678,8 @@ boot();
   weather.innerHTML = '<div class="small">YOUR WEATHER</div><div class="weather-temp" id="weatherTemp">—</div><div id="weatherSummary" role="status" aria-live="polite">A little clarity for your morning.</div><button class="btn plain sm" id="weatherRefresh" style="margin-top:14px">Use my location</button><div class="hint">Location is shared with Open-Meteo for a live forecast. No API key required.</div>';
   home.append(weather);
   const bar = document.querySelector('.tabbar .inner');
-  bar.innerHTML = '<button class="ghost-nav" data-go="home"><span>👻</span>Home</button><button class="ghost-nav" data-go="coach"><span>💬</span>Coach</button><button class="ghost-nav" data-go="more"><span>✦</span>More Features</button><button class="ghost-nav" id="ghostSettings"><span>⚙</span>Settings</button>';
+  bar.innerHTML = '<button class="ghost-nav" data-nav="home"><span>👻</span>Home</button><button class="ghost-nav" data-nav="coach"><span>💬</span>Coach</button><button class="ghost-nav" data-nav="more"><span>✦</span>More Features</button><button class="ghost-nav" id="ghostSettings"><span>⚙</span>Settings</button>';
+  renderTabs();
   document.getElementById('ghostSettings').onclick = () => document.getElementById('btnSettings').click();
   const button = document.getElementById('weatherRefresh');
   const summary = document.getElementById('weatherSummary');
