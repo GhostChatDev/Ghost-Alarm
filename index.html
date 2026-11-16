@@ -836,8 +836,15 @@ function speak(text) {
   try {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(String(text));
-    u.rate = S.settings.style === "tough" ? 1.06 : 0.98;
-    u.pitch = 1.02;
+    /* soft, cute ghost voice: gentle pace, higher pitch, softest system voice */
+    u.rate = S.settings.style === "tough" ? 0.98 : 0.9;
+    u.pitch = S.settings.style === "tough" ? 1.25 : 1.4;
+    u.volume = 0.95;
+    const voices = window.speechSynthesis.getVoices() || [];
+    const soft = voices.filter(function (v) {
+      return /samantha|karen|moira|tessa|fiona|zira|aria|jenny|female|soft|junior/i.test(v.name) && /^en/i.test(v.lang);
+    })[0];
+    if (soft) u.voice = soft;
     window.speechSynthesis.speak(u);
   } catch (e) { }
 }
@@ -1261,6 +1268,26 @@ function setSwitch(node, on) {
 }
 function switchOn(node) { return node && node.getAttribute("data-on") === "1"; }
 
+/* ------------------------------------ quick wake-up times in the alarm picker */
+const QUICK_TIMES = [{ h: 5, m: 30 }, { h: 6, m: 30 }, { h: 7, m: 0 }, { h: 7, m: 30 }, { h: 8, m: 0 }];
+function paintQuick() {
+  const box = el("aQuick");
+  if (!box) return;
+  const h = Number(el("aHour").value), m = Number(el("aMin").value);
+  html(box, QUICK_TIMES.map(function (t) {
+    const on = t.h === h && t.m === m;
+    return '<button type="button" class="chip' + (on ? " on" : "") + '" data-quick="' + t.h + ":" + t.m + '">' + fmt12(t.h, t.m) + "</button>";
+  }).join(""));
+}
+function setQuick(value) {
+  const parts = String(value).split(":");
+  const h = Math.max(0, Math.min(23, Number(parts[0]) || 0));
+  const m = Math.max(0, Math.min(59, Number(parts[1]) || 0));
+  el("aHour").value = h;
+  el("aMin").value = m;
+  paintQuick();
+}
+
 /* ------------------------------------ weather-aware alarm reminder (Open-Meteo) */
 const weatherBox = { temp: null, code: null, rain: null, loading: false };
 function weatherKnown() { return Number.isFinite(weatherBox.temp) && Number.isFinite(weatherBox.code); }
@@ -1480,6 +1507,10 @@ document.addEventListener("click", function (ev) {
     if (S.view === "coach") renderCoach();
     return;
   }
+  if ((n = hit("[data-quick]"))) {
+    setQuick(n.getAttribute("data-quick"));
+    return;
+  }
   if ((n = hit("[data-open]"))) {
     const what = n.getAttribute("data-open");
     if (what === "alarm") openAlarmSheet(null);
@@ -1578,6 +1609,12 @@ document.addEventListener("click", function (ev) {
   }
   if (t === el("setRing")) { S.settings.ringOn = !S.settings.ringOn; save(); renderSettings(); return; }
   if (t === el("aVoice")) { setSwitch(t, !switchOn(t)); return; }
+  if (t === el("aWeather")) {
+    setSwitch(t, !switchOn(t));
+    paintWeatherPreview();
+    if (switchOn(t) && !weatherKnown()) loadWeatherForAlarm();
+    return;
+  }
   if (t === el("testVoice")) { speak(coachLine() + " " + challengeOfDay().b); toast("👻 Speaking"); return; }
   if (t === el("testRing")) {
     const a = { h: new Date().getHours(), m: new Date().getMinutes(), e: "👻", label: "Test", tone: el("aTone") ? el("aTone").value : "chime", snooze: 5, msg: "" };
@@ -1640,6 +1677,7 @@ function testProvider() {
 
 document.addEventListener("input", function (ev) {
   if (ev.target === el("sQuality")) el("sQualityLabel").textContent = el("sQuality").value + "/5";
+  if (ev.target === el("aHour") || ev.target === el("aMin")) paintQuick();
 });
 document.addEventListener("keydown", function (ev) {
   if (ev.key === "Escape") closeSheet();

@@ -70,12 +70,18 @@ jobs:
               assert.match(await page.locator('#weatherSummary').innerText(), /Location not available/);
               await nav('more');
               await visible('#challengeCard');
-              for (const tool of ['alarms', 'habits', 'sleep', 'coach']) {
+              for (const tool of ['alarms', 'habits', 'sleep']) {
                 await page.locator(`.feature-grid [data-go="${tool}"]`).click();
                 await visible('#view-' + tool);
                 await fits();
                 await nav('more');
               }
+              await page.locator('.feature-grid #moreWeather').click();
+              await visible('#weatherRefresh');
+              // Coach now lives in the tab bar, not in More Features
+              assert.equal(await page.locator('.feature-grid [data-go="coach"]').count(), 0);
+              await nav('coach');
+              await visible('#chatInput');
               await page.reload({ waitUntil: 'networkidle' });
               await visible('#view-more');
               await nav('home');
