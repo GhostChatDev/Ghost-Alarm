@@ -223,6 +223,14 @@ body{background-image:radial-gradient(ellipse at 50% 0,#352653 0,transparent 48%
 .weather-temp{font-size:48px;font-weight:700;letter-spacing:-2px}.weather-card .hint{color:#ECE3FF}
 .coach-preview{position:relative;margin:44px 0 18px!important;padding-top:28px}.coach-preview:before{content:'👻';position:absolute;top:-40px;left:calc(50% - 30px);font-size:60px;filter:drop-shadow(0 0 18px #C3A6FF)}
 .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.feature-grid button{text-align:left;padding:20px;border:1px solid var(--line);border-radius:22px;background:#2B2735;font-weight:650}.feature-grid span{display:block;font-size:26px;margin-bottom:10px}
+/* Motion polish — cheap transform/opacity only, so it stays at 60fps */
+.view.on{animation:viewIn .26s ease both}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hero-time{animation:breathe 4.5s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.86}}
+.coach-preview{align-items:flex-start}
+.tonight-card{margin-top:18px!important}
+.tile-note{margin-top:6px;font-size:12.5px;color:var(--ink-soft)}
 #ringer{background:radial-gradient(ellipse at top,#342549,#181B1E 60%)}#ringerTime{font-size:clamp(70px,22vw,110px);font-weight:500}#ringer .ghost{font-size:86px;filter:drop-shadow(0 0 22px #B49AF7)}#ringer .row{flex-direction:column;width:min(350px,100%)}#ringer .btn{width:100%;border-radius:40px;padding:18px}#ringerDone{order:-1;background:#B49AF7!important;color:#19151F!important}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
@@ -1654,7 +1662,12 @@ boot();
   const home = document.getElementById('view-home');
   const more = document.createElement('section');
   more.id = 'view-more'; more.className = 'view';
-  more.innerHTML = '<h2>More Features</h2><p class="muted small" style="margin-top:8px">All your familiar tools, in one place.</p><div class="feature-grid"><button data-go="alarms"><span>⏰</span>Alarms</button><button data-go="habits"><span>🌱</span>Habits</button><button data-go="sleep"><span>🌙</span>Sleep & sounds</button><button data-go="coach"><span>👻</span>Coach & voice</button></div>';
+  more.innerHTML = '<h2>More Features</h2><p class="muted small" style="margin-top:8px">Everything else your ghost keeps an eye on.</p><div class="feature-grid">' +
+    '<button data-go="alarms"><span>⏰</span>Alarms<div class="tile-note">Set, repeat, snooze</div></button>' +
+    '<button data-go="habits"><span>🌱</span>Habits<div class="tile-note">Streaks and check-ins</div></button>' +
+    '<button data-go="sleep"><span>🌙</span>Sleep &amp; sounds<div class="tile-note">Bedtime timer and noise</div></button>' +
+    '<button id="moreWeather"><span>🌤</span>Weather<div class="tile-note" id="moreWeatherNote">Tap for forecast</div></button>' +
+    '</div>';
   home.parentNode.append(more);
   const challenge = document.getElementById('challengeCard');
   more.append(challenge.previousElementSibling, challenge);
@@ -1672,10 +1685,39 @@ boot();
   const weather = document.createElement('div');
   weather.className = 'card weather-card';
   weather.innerHTML = '<div class="small">YOUR WEATHER</div><div class="weather-temp" id="weatherTemp">—</div><div id="weatherSummary" role="status" aria-live="polite">A little clarity for your morning.</div><button class="btn plain sm" id="weatherRefresh" style="margin-top:14px">Use my location</button><div class="hint">Location is shared with Open-Meteo for a live forecast. No API key required.</div>';
-  home.append(weather);
+
+  /* Home = ghost clock, morning coach, weather, tonight */
+  const hero = document.querySelector('.hero');
+  const coachTitle = document.createElement('div');
+  coachTitle.className = 'sec-title';
+  coachTitle.textContent = 'Your morning coach';
+  hero.after(actions, weather, coachTitle, preview);
+
+  const tonight = document.createElement('div');
+  tonight.className = 'card tonight-card';
+  tonight.innerHTML = '<div class="row between"><div class="grow"><div class="tiny muted">TONIGHT</div>' +
+    '<div style="font-weight:700;margin-top:4px" id="tonightNext">No alarm set</div>' +
+    '<div class="small muted" id="tonightHint">Aim for 7–8 hours. Your ghost will nudge you at bedtime.</div></div>' +
+    '<button class="btn soft sm" data-go="sleep">Sleep</button></div>' +
+    '<button class="btn plain block sm" style="margin-top:12px" data-go="more">✦ More features</button>';
+  preview.after(tonight);
+
+  const syncTonight = () => {
+    const live = document.getElementById('statNext'), text = document.getElementById('tonightNext');
+    if (live && text) text.textContent = live.textContent;
+  };
+  syncTonight();
+  setTimeout(syncTonight, 800);
+  setInterval(syncTonight, 5000);
   document.querySelector('.tabbar .inner').innerHTML = '<button class="ghost-nav" data-nav="home"><span>👻</span>Home</button><button class="ghost-nav" data-nav="coach"><span>💬</span>Coach</button><button class="ghost-nav" data-nav="more"><span>✦</span>More Features</button><button class="ghost-nav" id="ghostSettings"><span>⚙</span>Settings</button>';
   renderTabs();
   document.getElementById('ghostSettings').onclick = () => document.getElementById('btnSettings').click();
+  document.getElementById('moreWeather').onclick = () => {
+    const button = document.getElementById('weatherRefresh');
+    toast('Weather lives on your Home screen');
+    document.querySelector('.tabbar [data-nav="home"]').click();
+    setTimeout(() => { button.click(); button.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 260);
+  };
   const button = document.getElementById('weatherRefresh');
   const summary = document.getElementById('weatherSummary');
   button.onclick = () => {
