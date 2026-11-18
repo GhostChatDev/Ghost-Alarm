@@ -48,7 +48,6 @@ struct HomeDashboardView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 20) {
-                // Top Alarm Card with purple glowing border
                 Button {
                     store.showingWakeUpSheet = true
                 } label: {
@@ -60,10 +59,10 @@ struct HomeDashboardView: View {
                             Spacer()
                             HStack(alignment: .firstTextBaseline, spacing: 6) {
                                 Text(store.primaryAlarm.timeString12)
-                                    .font(.system(size: 68, weight: .bold, design: .rounded))
+                                    .font(.system(size: 72, weight: .bold, design: .rounded))
                                     .foregroundStyle(GhostTheme.textPrimary)
                                 Text(store.primaryAlarm.daypart)
-                                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
                                     .foregroundStyle(GhostTheme.textPrimary)
                             }
                         }
@@ -112,7 +111,6 @@ struct HomeDashboardView: View {
                 }
                 .buttonStyle(.plain)
 
-                // AI Coach Card with Floating Ghost overlapping top center
                 ZStack(alignment: .top) {
                     Button {
                         withAnimation(.easeInOut(duration: 0.22)) {
@@ -150,7 +148,6 @@ struct HomeDashboardView: View {
                         .offset(y: -8)
                 }
 
-                // Weather Card with rich purple gradient & moon/cloud artwork
                 Button {
                     withAnimation(.easeInOut(duration: 0.25)) {
                         store.refreshWeatherMock()
@@ -176,7 +173,7 @@ struct HomeDashboardView: View {
                         Spacer()
                         ZStack {
                             Image(systemName: "moon.stars.fill")
-                                .symbolRenderingMode(.Hierarchical)
+                                .symbolRenderingMode(.hierarchical)
                                 .font(.system(size: 64))
                                 .foregroundStyle(Color.white.opacity(0.88))
                                 .offset(x: 10, y: -10)
@@ -193,34 +190,6 @@ struct HomeDashboardView: View {
                     .shadow(color: GhostTheme.violetDeep.opacity(0.45), radius: 18, x: 0, y: 8)
                 }
                 .buttonStyle(.plain)
-
-                // Quick actions to test Set Wake-Up & Ringer screens
-                HStack(spacing: 12) {
-                    Button {
-                        store.showingWakeUpSheet = true
-                    } label: {
-                        Label("Set Wake-Up", systemImage: "alarm.fill")
-                            .font(.system(size: 14, weight: .semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(GhostTheme.cardSurface)
-                            .foregroundStyle(GhostTheme.lavenderBright)
-                            .clipShape(Capsule())
-                    }
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            store.showingRingerOverlay = true
-                        }
-                    } label: {
-                        Label("Preview Wake Screen", systemImage: "bell.and.waves.left.and.right.fill")
-                            .font(.system(size: 14, weight: .semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(GhostTheme.cardSurface)
-                            .foregroundStyle(GhostTheme.lavenderBright)
-                            .clipShape(Capsule())
-                    }
-                }
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
@@ -236,7 +205,6 @@ struct MorningCoachView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Your Morning Coach")
@@ -273,14 +241,12 @@ struct MorningCoachView: View {
                         }
                     }
 
-                    // Outlined pill quick replies
                     FlowQuickChips(chips: store.quickReplies) { reply in
                         withAnimation(.easeInOut(duration: 0.2)) {
                             store.sendCoachMessage(reply)
                         }
                     }
 
-                    // Morning Plan Card
                     VStack(alignment: .leading, spacing: 14) {
                         Text("Morning plan")
                             .font(.system(size: 20, weight: .bold))
@@ -323,7 +289,6 @@ struct MorningCoachView: View {
                 .padding(20)
             }
 
-            // Bottom Composer Bar with Mic, Input & Purple Send Button
             HStack(spacing: 12) {
                 Button {
                     store.sendCoachMessage("Move my body")
@@ -436,7 +401,6 @@ struct SetWakeUpSheet: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.vertical, 4)
 
-                    // Wheel-style time picker container
                     HStack(spacing: 0) {
                         Picker("Hour", selection: $hour12) {
                             ForEach(1...12, id: \.self) { h in
@@ -470,7 +434,6 @@ struct SetWakeUpSheet: View {
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(GhostTheme.textSecondary)
 
-                    // Weekdays M T W T F S S card
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Weekdays")
                             .font(.system(size: 16, weight: .medium))
@@ -504,7 +467,6 @@ struct SetWakeUpSheet: View {
                     .background(GhostTheme.cardSurface)
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
 
-                    // Alarm On / Sound / Snooze grouped card
                     VStack(spacing: 0) {
                         Toggle(isOn: $alarmOn) {
                             Text("Alarm On")
@@ -543,7 +505,6 @@ struct SetWakeUpSheet: View {
                     .background(GhostTheme.cardSurface)
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
 
-                    // Weather-Aware Reminder Card
                     HStack(spacing: 14) {
                         Image(systemName: "umbrella.fill")
                             .font(.system(size: 28))
@@ -607,5 +568,306 @@ struct SetWakeUpSheet: View {
             sound = current.sound
             snooze = current.snoozeMinutes
         }
+    }
+}
+
+// MARK: - 4. Ringer / Wake-Up Screen (matches Photo 2: Happy glowing ghost, Good morning, 7:00, I'm Awake, Snooze · 5 min, Rain today · 12°C)
+struct RingerWakeView: View {
+    @Bindable var store: AppStore
+
+    private var formattedDateString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMMM d"
+        return formatter.string(from: Date())
+    }
+
+    var body: some View {
+        ZStack {
+            RadialGradient(
+                colors: [
+                    Color(red: 0.22, green: 0.16, blue: 0.36),
+                    GhostTheme.background
+                ],
+                center: .top,
+                startRadius: 20,
+                endRadius: 460
+            )
+            .ignoresSafeArea()
+
+            VStack(spacing: 18) {
+                Spacer(minLength: 24)
+
+                GhostMascotView(mood: .happyAwake, size: 112)
+
+                VStack(spacing: 6) {
+                    Text("Good morning")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundStyle(Color(red: 0.99, green: 0.91, blue: 0.78))
+                    Text("Let’s take the first small step.")
+                        .font(.system(size: 17, weight: .regular))
+                        .foregroundStyle(Color(red: 0.92, green: 0.84, blue: 0.76))
+                }
+                .padding(.top, 4)
+
+                VStack(spacing: 6) {
+                    Text(store.primaryAlarm.timeString12)
+                        .font(.system(size: 88, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                    Text(formattedDateString)
+                        .font(.system(size: 19, weight: .regular))
+                        .foregroundStyle(GhostTheme.textPrimary.opacity(0.9))
+                }
+                .padding(.vertical, 16)
+
+                VStack(spacing: 14) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            store.showingRingerOverlay = false
+                        }
+                    } label: {
+                        Text("I’m Awake")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundStyle(Color(red: 0.09, green: 0.07, blue: 0.14))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 18)
+                            .background(GhostTheme.lavender)
+                            .clipShape(Capsule())
+                            .shadow(color: GhostTheme.lavender.opacity(0.55), radius: 18, x: 0, y: 4)
+                    }
+
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            store.showingRingerOverlay = false
+                        }
+                    } label: {
+                        Text("Snooze · \(store.primaryAlarm.snoozeMinutes) min")
+                            .font(.system(size: 19, weight: .medium))
+                            .foregroundStyle(GhostTheme.lavenderBright)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 17)
+                            .background(
+                                Capsule()
+                                    .stroke(GhostTheme.lavender.opacity(0.65), lineWidth: 1.4)
+                            )
+                    }
+                }
+                .padding(.horizontal, 12)
+
+                Spacer()
+
+                HStack(spacing: 8) {
+                    Image(systemName: "cloud.rain.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(Color.cyan.opacity(0.85))
+                    Text(store.weatherForecastLine)
+                        .font(.system(size: 17, weight: .regular))
+                        .foregroundStyle(GhostTheme.textPrimary.opacity(0.9))
+                }
+                .padding(.bottom, 22)
+            }
+            .padding(.horizontal, 24)
+        }
+    }
+}
+
+// MARK: - 5. Settings & More Features Hub (houses Alarms, Habits, Sleep & Sounds, Weather, Cute Voice)
+struct MoreFeaturesSettingsView: View {
+    @Bindable var store: AppStore
+
+    private let sleepSounds = ["Rain on Leaves", "Soft Brown Noise", "Midnight Crickets", "Ocean Drift"]
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 20) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("More Features")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundStyle(GhostTheme.textPrimary)
+                        Text("Alarms, habits, sleep sounds & cute voice settings.")
+                            .font(.system(size: 15))
+                            .foregroundStyle(GhostTheme.textSecondary)
+                    }
+                    Spacer()
+                    GhostMascotView(mood: .standard, size: 56)
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Label("Wake-Up & Alarms", systemImage: "alarm.fill")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(GhostTheme.lavenderBright)
+                        Spacer()
+                        Button("Edit Wake-Up") {
+                            store.showingWakeUpSheet = true
+                        }
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(GhostTheme.lavender)
+                    }
+
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("\(store.primaryAlarm.timeString12) \(store.primaryAlarm.daypart)")
+                                .font(.system(size: 26, weight: .bold, design: .rounded))
+                                .foregroundStyle(GhostTheme.textPrimary)
+                            Text("\(store.primaryAlarm.scheduleSummary) · \(store.primaryAlarm.sound)")
+                                .font(.system(size: 14))
+                                .foregroundStyle(GhostTheme.textSecondary)
+                        }
+                        Spacer()
+                        Button("Ring Now") {
+                            withAnimation {
+                                store.showingRingerOverlay = true
+                            }
+                        }
+                        .font(.system(size: 14, weight: .semibold))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(GhostTheme.violetButton)
+                        .foregroundStyle(.white)
+                        .clipShape(Capsule())
+                    }
+                }
+                .padding(18)
+                .background(GhostTheme.cardSurface)
+                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Label("Morning Habits", systemImage: "sparkles")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(GhostTheme.lavenderBright)
+
+                    ForEach(store.habits) { habit in
+                        Button {
+                            withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                                store.toggleHabit(habit.id)
+                            }
+                        } label: {
+                            HStack(spacing: 12) {
+                                Text(habit.icon)
+                                    .font(.system(size: 20))
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(habit.title)
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundStyle(GhostTheme.textPrimary)
+                                    Text("\(habit.streakDays) day streak")
+                                        .font(.system(size: 13))
+                                        .foregroundStyle(GhostTheme.textSecondary)
+                                }
+                                Spacer()
+                                Image(systemName: habit.completedToday ? "checkmark.circle.fill" : "circle")
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(habit.completedToday ? GhostTheme.lavender : GhostTheme.textSecondary)
+                            }
+                            .padding(.vertical, 6)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(18)
+                .background(GhostTheme.cardSurface)
+                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Label("Sleep & Sounds", systemImage: "moon.stars.fill")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(GhostTheme.lavenderBright)
+                        Spacer()
+                        Text(String(format: "Last sleep %.1fh", store.lastSleepHours))
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(GhostTheme.textSecondary)
+                    }
+
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                        ForEach(sleepSounds, id: \.self) { soundName in
+                            let playing = store.activeSleepSound == soundName
+                            Button {
+                                store.activeSleepSound = playing ? nil : soundName
+                            } label: {
+                                HStack {
+                                    Image(systemName: playing ? "waveform" : "play.fill")
+                                        .font(.system(size: 13))
+                                    Text(soundName)
+                                        .font(.system(size: 14, weight: .medium))
+                                        .lineLimit(1)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 10)
+                                .background(playing ? GhostTheme.violetButton : Color.white.opacity(0.06))
+                                .foregroundStyle(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .padding(18)
+                .background(GhostTheme.cardSurface)
+                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+
+                VStack(spacing: 14) {
+                    Toggle(isOn: $store.cuteVoiceEnabled) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Cute Ghost Voice")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(GhostTheme.textPrimary)
+                            Text("Soft, high-pitched friendly wake-up voice")
+                                .font(.system(size: 13))
+                                .foregroundStyle(GhostTheme.textSecondary)
+                        }
+                    }
+                    .tint(GhostTheme.violetButton)
+                }
+                .padding(18)
+                .background(GhostTheme.cardSurface)
+                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            }
+            .padding(20)
+        }
+    }
+}
+
+// MARK: - Bottom 3-Item Tab Bar matching Reference Photos (Home, Coach, Settings)
+struct GhostTabBar: View {
+    @Binding var selectedTab: AppStore.Tab
+
+    var body: some View {
+        HStack {
+            tabButton(tab: .home, icon: "sparkles.rectangle.stack.fill", label: "Home")
+            Spacer()
+            tabButton(tab: .coach, icon: "bubble.left.and.bubble.right.fill", label: "Coach")
+            Spacer()
+            tabButton(tab: .settings, icon: "gearshape.fill", label: "Settings")
+        }
+        .padding(.horizontal, 42)
+        .padding(.top, 12)
+        .padding(.bottom, 16)
+        .background(
+            Color(red: 0.12, green: 0.11, blue: 0.16)
+                .overlay(alignment: .top) {
+                    Divider().overlay(Color.white.opacity(0.08))
+                }
+        )
+    }
+
+    private func tabButton(tab: AppStore.Tab, icon: String, label: String) -> some View {
+        let isSelected = selectedTab == tab
+        return Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                selectedTab = tab
+            }
+        } label: {
+            VStack(spacing: 5) {
+                Image(systemName: icon)
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(isSelected ? GhostTheme.lavender : GhostTheme.textSecondary)
+                Text(label)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(isSelected ? GhostTheme.lavender : GhostTheme.textSecondary)
+            }
+        }
+        .buttonStyle(.plain)
     }
 }
