@@ -202,6 +202,64 @@ public final class AppStore {
         }
     }
 
+    /// Self-tests for the app logic. Run by CI (`swift.yml`, ios job) and usable anywhere.
+    /// Returns an empty array when everything passes.
+    public static func runSelfTests() -> [String] {
+        var failures: [String] = []
+        func expect(_ condition: Bool, _ name: String) {
+            if !condition { failures.append(name) }
+        }
+
+        // Time formatting
+        let midnight = GhostAlarmItem(hour: 0, minute: 5)
+        expect(midnight.timeString12 == "12:05" && midnight.daypart == "AM", "midnight formatting")
+        let noon = GhostAlarmItem(hour: 12, minute: 0)
+        expect(noon.timeString12 == "12:00" && noon.daypart == "PM", "noon formatting")
+        let evening = GhostAlarmItem(hour: 19, minute: 45)
+        expect(evening.timeString12 == "7:45" && evening.daypart == "PM", "evening formatting")
+
+        // Schedule summaries
+        expect(GhostAlarmItem(weekdays: [6, 7]).scheduleSummary == "Tomorrow · Weekends", "weekend summary")
+        expect(GhostAlarmItem(weekdays: [1, 2, 3, 4, 5, 6, 7]).scheduleSummary == "Tomorrow · Every day", "everyday summary")
+        expect(GhostAlarmItem(weekdays: [1, 3, 5]).scheduleSummary == "Tomorrow · Mon, Wed, Fri", "custom summary")
+        expect(GhostAlarmItem(weekdays: []).scheduleSummary == "Once", "empty summary")
+
+        // Save wake-up conversions (12h picker -> 24h storage)
+        let store = AppStore()
+        store.saveWakeUp(hour12: 7, minute: 30, isPM: true, weekdays: [1, 2, 3, 4, 5], isEnabled: true, sound: "Ocean Drift", snooze: 10)
+        expect(store.primaryAlarm.hour == 19 && store.primaryAlarm.minute == 30, "PM save conversion")
+        expect(store.primaryAlarm.sound == "Ocean Drift" && store.primaryAlarm.snoozeMinutes == 10, "save persists sound and snooze")
+        store.saveWakeUp(hour12: 12, minute: 0, isPM: false, weekdays: [], isEnabled: false, sound: "Ethereal Echo", snooze: 5)
+        expect(store.primaryAlarm.hour == 0 && store.primaryAlarm.isEnabled == false, "midnight AM save")
+        expect(store.primaryAlarm.scheduleSummary == "Once", "saved empty weekdays read as Once")
+
+        // Alarm toggle
+        store.togglePrimaryAlarm()
+        expect(store.primaryAlarm.isEnabled == true, "toggle alarm back on")
+
+        // Habits: habits[0] starts completedToday=true, streak 6
+        let habitID = store.habits[0].id
+        store.toggleHabit(habitID)
+        expect(store.habits[0].streakDays == 5, "habit streak decrements when unticked")
+        store.toggleHabit(habitID)
+        expect(store.habits[0].streakDays == 6, "habit streak restores when ticked")
+
+        // Coach chat
+        let messageCount = store.messages.count
+        store.sendCoachMessage("   ")
+        expect(store.messages.count == messageCount, "blank coach message ignored")
+        store.sendCoachMessage("help me focus on work")
+        expect(store.messages.count == messageCount + 2, "coach adds user message and reply")
+        expect(store.messages.last?.isUser == false, "last message is the coach reply")
+
+        // Weather mock cycle
+        let before = store.temperatureCelsius
+        store.refreshWeatherMock()
+        expect(store.temperatureCelsius != before, "weather refresh cycles samples")
+
+        return failures
+    }
+
     public func saveWakeUp(hour12: Int, minute: Int, isPM: Bool, weekdays: Set<Int>, isEnabled: Bool, sound: String, snooze: Int) {
         let normalized12 = ((hour12 - 1) % 12) + 1
         let hour24: Int
