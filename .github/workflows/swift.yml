@@ -115,3 +115,68 @@ jobs:
             }
           })().catch(error => { console.error('FAIL:', error); process.exit(1); });
           JS
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show Xcode
+        run: xcodebuild -version
+      - name: Run Swift logic unit tests
+        run: |
+          cat AppStore.swift - <<'SWIFT' > /tmp/run_tests.swift
+          @main
+          struct TestRunner {
+              static func main() {
+                  let failures = AppStore.runSelfTests()
+                  if !failures.isEmpty {
+                      fputs("FAIL: \(failures)\n", stderr)
+                      exit(1)
+                  }
+                  print("ALL SWIFT LOGIC TESTS PASSED")
+              }
+          }
+          SWIFT
+          swiftc -parse-as-library /tmp/run_tests.swift -o /tmp/run_tests
+          /tmp/run_tests
+      - name: Generate Xcode project (XcodeGen) and build for iOS Simulator
+        run: |
+          set -euo pipefail
+          if [ ! -f project.yml ]; then
+            cat <<'YAML' > project.yml
+          name: ReadyByEight
+          options:
+            bundleIdPrefix: com.ghostchat
+            deploymentTarget:
+              iOS: "17.0"
+          targets:
+            ReadyByEight:
+              type: application
+              platform: iOS
+              sources:
+                - path: AppStore.swift
+                - path: GhostTheme.swift
+                - path: ReadyByEight
+              settings:
+                base:
+                  PRODUCT_BUNDLE_IDENTIFIER: com.ghostchat.readybyeight
+                  GENERATE_INFOPLIST_FILE: YES
+                  INFOPLIST_KEY_UILaunchScreen_Generation: YES
+                  INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+                  SWIFT_VERSION: "5.10"
+                  CODE_SIGNING_ALLOWED: NO
+          schemes:
+            ReadyByEight:
+              build:
+                targets:
+                  ReadyByEight: all
+          YAML
+          fi
+          brew install xcodegen
+          xcodegen generate
+          xcodebuild -project ReadyByEight.xcodeproj -scheme ReadyByEight \
+            -destination 'generic/platform=iOS Simulator' -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build | tee build.log | grep -E "error:|warning: .*deprecated|BUILD (SUCCEEDED|FAILED)|\*\* " || true
+          grep -q "BUILD SUCCEEDED" build.log
+
